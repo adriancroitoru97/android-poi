@@ -1,22 +1,20 @@
-import React, { useState, useRef } from 'react';
-import { View, Button, StyleSheet } from 'react-native';
-import MapView, { Marker, LatLng } from 'react-native-maps';
+import React, {useRef, useState} from 'react';
+import {Button, StyleSheet, View} from 'react-native';
+import MapView, {LatLng, Marker} from 'react-native-maps';
 
 export default function MapScreen() {
-  const mapRef = useRef(null);
+  const mapRef = useRef<MapView>(null);
 
-  // Define marker coordinates
   const [markers] = useState<LatLng[]>([
-    { latitude: 37.78825, longitude: -122.4324 },
-    { latitude: 37.78925, longitude: -122.4224 },
-    { latitude: 37.78025, longitude: -122.4124 },
+    {latitude: 37.78825, longitude: -122.4324},
+    {latitude: 37.78925, longitude: -122.4224},
+    {latitude: 37.78025, longitude: -122.4124},
   ]);
 
   const centerMarkers = () => {
-    // Check if markers exist
-    if (mapRef.current && markers.length > 0) {
-      mapRef.current.fitToCoordinates(markers, {
-        edgePadding: { top: 50, right: 50, bottom: 50, left: 50 },
+    if (markers.length > 0) {
+      mapRef.current?.fitToCoordinates(markers, {
+        edgePadding: {top: 50, right: 50, bottom: 50, left: 50},
         animated: true,
       });
     }
@@ -44,7 +42,7 @@ export default function MapScreen() {
         ))}
       </MapView>
       <View style={styles.buttonContainer}>
-        <Button title="Center Markers" onPress={centerMarkers} />
+        <Button title="Center Markers" onPress={centerMarkers}/>
       </View>
     </View>
   );
