@@ -16,7 +16,7 @@ export default function Index() {
         <Button icon="account" mode="contained" style={styles.button} onPress={() => {
           router.push("/register")
         }}>REGISTER</Button>
-        <Button icon="map" mode="contained" style={styles.button} onPress={() => {
+        <Button icon="map" mode="elevated" style={styles.button} onPress={() => {
           router.push("/map")
         }}>MAP</Button>
       </View>
