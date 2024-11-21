@@ -2,6 +2,7 @@ import React, {useState} from 'react';
 import {StyleSheet, View} from 'react-native';
 import {Button, Card, Text, TextInput, useTheme} from 'react-native-paper';
 import {useRouter} from "expo-router";
+import {authenticate} from "@/api";
 
 export default function Login() {
   const router = useRouter();
@@ -11,9 +12,11 @@ export default function Login() {
   const theme = useTheme();
 
   const handleLogin = () => {
-    // Handle login logic here
-    console.log('Email:', email);
-    console.log('Password:', password);
+    authenticate({email: email, password: password}).then(r => {
+      console.log(r);
+    }).catch(e => {
+      console.error(e);
+    });
   };
 
   return (

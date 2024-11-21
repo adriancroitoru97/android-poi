@@ -2,20 +2,23 @@ import React, {useState} from 'react';
 import {StyleSheet, View} from 'react-native';
 import {Button, Card, Text, TextInput, useTheme} from 'react-native-paper';
 import {useRouter} from "expo-router";
+import {register} from "@/api";
 
 export default function Register() {
   const router = useRouter();
 
-  const [name, setName] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const theme = useTheme();
 
   const handleRegister = () => {
-    // Handle registration logic here
-    console.log('Name:', name);
-    console.log('Email:', email);
-    console.log('Password:', password);
+    register({firstName: firstName, lastName: lastName, email: email, password: password}).then(r => {
+      console.log(r);
+    }).catch(e => {
+      console.error(e);
+    });
   };
 
   return (
@@ -26,9 +29,16 @@ export default function Register() {
             Create an Account
           </Text>
           <TextInput
-            label="Name"
-            value={name}
-            onChangeText={setName}
+            label="First Name"
+            value={firstName}
+            onChangeText={setFirstName}
+            style={styles.input}
+            mode="outlined"
+          />
+          <TextInput
+            label="Last Name"
+            value={lastName}
+            onChangeText={setLastName}
             style={styles.input}
             mode="outlined"
           />
