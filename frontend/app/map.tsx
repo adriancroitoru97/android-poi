@@ -2,7 +2,7 @@ import React, {useRef, useState} from 'react';
 import {Button, StyleSheet, View} from 'react-native';
 import MapView, {LatLng, Marker} from 'react-native-maps';
 
-export default function MapScreen() {
+export default function Map() {
   const mapRef = useRef<MapView>(null);
 
   const [markers] = useState<LatLng[]>([
