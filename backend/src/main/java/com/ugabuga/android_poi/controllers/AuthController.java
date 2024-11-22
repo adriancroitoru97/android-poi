@@ -31,7 +31,6 @@ public class AuthController {
     }
 
     @PostMapping("/authenticate")
-    @CrossOrigin(origins = "${frontend.url}", allowCredentials = "true")
     public ResponseEntity<AuthenticationResponse> authenticate(@Valid @RequestBody AuthenticationRequest request) {
         AuthenticationResponse authenticationResponse = authenticationService.authenticate(request);
         return ResponseEntity.ok().body(authenticationResponse);
