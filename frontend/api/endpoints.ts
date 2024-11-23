@@ -21,7 +21,7 @@ type SecondParameter<T extends (...args: any) => any> = Parameters<T>[1];
     registerRequest: RegisterRequest,
  options?: SecondParameter<typeof customInstance>,) => {
       return customInstance<Register200>(
-      {url: `http://localhost:8080/api/v1/auth/register`, method: 'POST',
+      {url: `http://192.168.0.106:8080/api/v1/auth/register`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: registerRequest
     },
@@ -32,7 +32,7 @@ export const authenticate = (
     authenticationRequest: AuthenticationRequest,
  options?: SecondParameter<typeof customInstance>,) => {
       return customInstance<AuthenticationResponse>(
-      {url: `http://localhost:8080/api/v1/auth/authenticate`, method: 'POST',
+      {url: `http://192.168.0.106:8080/api/v1/auth/authenticate`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: authenticationRequest
     },

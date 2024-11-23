@@ -1,12 +1,14 @@
 import axios, { AxiosRequestConfig } from "axios";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import {AUTH_TOKEN_KEY} from "@/constants/Constants";
 
 const axiosInstance = axios.create({
-  baseURL: "http://localhost:8080",
+  baseURL: "http://192.168.0.106:8080",
 });
 
 axiosInstance.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem("accessToken");
+  async (config) => {
+    const token = await AsyncStorage.getItem(AUTH_TOKEN_KEY);
     if (token) {
       config.headers["Authorization"] = `Bearer ${token}`;
     }
@@ -14,19 +16,6 @@ axiosInstance.interceptors.request.use(
     return config;
   },
   (error) => {
-    return Promise.reject(error);
-  },
-);
-
-// Response interceptor to handle expired token case
-axiosInstance.interceptors.response.use(
-  (response) => response, // If the response is successful, just return it
-  async (error) => {
-    const originalRequest = error.config;
-    if (error.response.status === 403 && !originalRequest._retry) {
-      // If the request fails due to an expired token, try refreshing it
-      originalRequest._retry = true; // Mark this request as already retried
-    }
     return Promise.reject(error);
   },
 );

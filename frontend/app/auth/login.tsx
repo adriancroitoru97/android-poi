@@ -1,10 +1,12 @@
 import React, {useState} from 'react';
 import {StyleSheet, View} from 'react-native';
 import {Button, Card, Text, TextInput, useTheme} from 'react-native-paper';
+import Toast from "react-native-toast-message";
+import {useAuth} from "@/security/AuthProvider";
 import {useRouter} from "expo-router";
-import {authenticate} from "@/api";
 
 export default function Login() {
+  const auth = useAuth();
   const router = useRouter();
 
   const [email, setEmail] = useState('');
@@ -12,10 +14,14 @@ export default function Login() {
   const theme = useTheme();
 
   const handleLogin = () => {
-    authenticate({email: email, password: password}).then(r => {
-      console.log(r);
-    }).catch(e => {
-      console.error(e);
+    auth.login({email, password}).then((loginSuccess) => {
+      if (!loginSuccess) {
+        Toast.show({
+          type: 'error',
+          text1: 'Wrong credentials',
+          text2: 'Try again!',
+        });
+      }
     });
   };
 
@@ -52,7 +58,7 @@ export default function Login() {
             Login
           </Button>
           <Text style={styles.footerText}>
-            Don't have an account? <Text style={styles.link} onPress={() => router.navigate("/register")}>Sign Up</Text>
+            Don't have an account? <Text style={styles.link} onPress={() => router.navigate("/auth/register")}>Sign Up</Text>
           </Text>
         </Card.Content>
       </Card>

@@ -3,6 +3,7 @@ import {StyleSheet, View} from 'react-native';
 import {Button, Card, Text, TextInput, useTheme} from 'react-native-paper';
 import {useRouter} from "expo-router";
 import {register} from "@/api";
+import Toast from "react-native-toast-message";
 
 export default function Register() {
   const router = useRouter();
@@ -15,9 +16,18 @@ export default function Register() {
 
   const handleRegister = () => {
     register({firstName: firstName, lastName: lastName, email: email, password: password}).then(r => {
-      console.log(r);
+      router.navigate('/');
+      Toast.show({
+        type: 'success',
+        text1: 'Success',
+        text2: 'You can log in!',
+      });
     }).catch(e => {
-      console.error(e);
+      Toast.show({
+        type: 'error',
+        text1: 'Something went wrong',
+        text2: 'Try again!',
+      });
     });
   };
 
@@ -68,7 +78,7 @@ export default function Register() {
             Register
           </Button>
           <Text style={styles.footerText}>
-            Already have an account? <Text style={styles.link} onPress={() => router.push("/login")}>Log in</Text>
+            Already have an account? <Text style={styles.link} onPress={() => router.push("/auth/login")}>Log in</Text>
           </Text>
         </Card.Content>
       </Card>
