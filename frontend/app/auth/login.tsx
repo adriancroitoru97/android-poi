@@ -22,6 +22,7 @@ export default function Login() {
           text2: 'Try again!',
         });
       }
+      router.navigate('/');
     });
   };
 

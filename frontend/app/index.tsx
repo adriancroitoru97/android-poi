@@ -28,7 +28,7 @@ const HomeNoAuth = () => {
           router.push("/auth/register")
         }}>REGISTER</Button>
         <Button icon="map" mode="elevated" style={styles.button} onPress={() => {
-          router.push("/protected/map")
+          router.push("/map")
         }}>MAP</Button>
       </View>
     </>
@@ -47,7 +47,7 @@ const HomeAuth = () => {
         auth.logout();
       }}>LOGOUT</Button>
       <Button icon="map" mode="elevated" style={styles.button} onPress={() => {
-        router.push("/protected/map")
+        router.push("/map")
       }}>MAP</Button>
     </View>
     <View style={styles.buttons}>

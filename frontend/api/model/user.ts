@@ -5,6 +5,7 @@
  * OpenAPI spec version: v0
  */
 import type { GrantedAuthority } from './grantedAuthority';
+import type { Preference } from './preference';
 import type { UserRole } from './userRole';
 
 export interface User {
@@ -17,6 +18,7 @@ export interface User {
   firstName?: string;
   id?: number;
   lastName?: string;
+  listOfPreference?: Preference[];
   password?: string;
   role?: UserRole;
   username?: string;

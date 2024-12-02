@@ -4,9 +4,11 @@ import {Button, Card, Text, TextInput, useTheme} from 'react-native-paper';
 import {useRouter} from "expo-router";
 import {register} from "@/api";
 import Toast from "react-native-toast-message";
+import {useAuth} from "@/security/AuthProvider";
 
 export default function Register() {
   const router = useRouter();
+  const auth = useAuth();
 
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -16,11 +18,19 @@ export default function Register() {
 
   const handleRegister = () => {
     register({firstName: firstName, lastName: lastName, email: email, password: password}).then(r => {
-      router.navigate('/');
-      Toast.show({
-        type: 'success',
-        text1: 'Success',
-        text2: 'You can log in!',
+      auth.login({email: email, password: password}).then(() => {
+        router.navigate('/preferences-selection');
+        Toast.show({
+          type: 'success',
+          text1: 'Success',
+          text2: 'Pick your preferences now!',
+        });
+      }).catch(e => {
+        Toast.show({
+          type: 'error',
+          text1: 'Something went wrong',
+          text2: 'Try logging in manually!',
+        });
       });
     }).catch(e => {
       Toast.show({

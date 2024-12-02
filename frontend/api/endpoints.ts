@@ -5,8 +5,12 @@
  * OpenAPI spec version: v0
  */
 import type {
+  AddPreferencesForUserParams,
   AuthenticationRequest,
   AuthenticationResponse,
+  GetPreferencesByUserIdParams,
+  ListOfPreferencesDTO,
+  PreferenceDTO,
   Register200,
   RegisterRequest
 } from './model'
@@ -17,11 +21,24 @@ import { customInstance } from '../security/axiosConfig';
 type SecondParameter<T extends (...args: any) => any> = Parameters<T>[1];
 
 
-  export const register = (
+  export const addPreferencesForUser = (
+    listOfPreferencesDTO: ListOfPreferencesDTO,
+    params: AddPreferencesForUserParams,
+ options?: SecondParameter<typeof customInstance>,) => {
+      return customInstance<string>(
+      {url: `http://172.20.10.5:8080/api/v1/preference/addPreferenceForUser`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: listOfPreferencesDTO,
+        params
+    },
+      options);
+    }
+  
+export const register = (
     registerRequest: RegisterRequest,
  options?: SecondParameter<typeof customInstance>,) => {
       return customInstance<Register200>(
-      {url: `http://192.168.0.106:8080/api/v1/auth/register`, method: 'POST',
+      {url: `http://172.20.10.5:8080/api/v1/auth/register`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: registerRequest
     },
@@ -32,12 +49,34 @@ export const authenticate = (
     authenticationRequest: AuthenticationRequest,
  options?: SecondParameter<typeof customInstance>,) => {
       return customInstance<AuthenticationResponse>(
-      {url: `http://192.168.0.106:8080/api/v1/auth/authenticate`, method: 'POST',
+      {url: `http://172.20.10.5:8080/api/v1/auth/authenticate`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: authenticationRequest
     },
       options);
     }
   
+export const getPreferencesByUserId = (
+    params: GetPreferencesByUserIdParams,
+ options?: SecondParameter<typeof customInstance>,) => {
+      return customInstance<PreferenceDTO[]>(
+      {url: `http://172.20.10.5:8080/api/v1/preference/getPreferencesByUserId`, method: 'GET',
+        params
+    },
+      options);
+    }
+  
+export const getAllPreferences = (
+    
+ options?: SecondParameter<typeof customInstance>,) => {
+      return customInstance<string[]>(
+      {url: `http://172.20.10.5:8080/api/v1/preference/getAllPreferences`, method: 'GET'
+    },
+      options);
+    }
+  
+export type AddPreferencesForUserResult = NonNullable<Awaited<ReturnType<typeof addPreferencesForUser>>>
 export type RegisterResult = NonNullable<Awaited<ReturnType<typeof register>>>
 export type AuthenticateResult = NonNullable<Awaited<ReturnType<typeof authenticate>>>
+export type GetPreferencesByUserIdResult = NonNullable<Awaited<ReturnType<typeof getPreferencesByUserId>>>
+export type GetAllPreferencesResult = NonNullable<Awaited<ReturnType<typeof getAllPreferences>>>

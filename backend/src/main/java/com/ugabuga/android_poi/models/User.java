@@ -26,6 +26,10 @@ public class User implements UserDetails {
     private String email;
     private String password;
 
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JoinColumn(name = "user_id")
+    private List<Preference> listOfPreference;
+
     @Enumerated(EnumType.STRING)
     private Role role;
 
