@@ -71,6 +71,15 @@ function AppRoutes() {
           focus: authGuard(user)
         }}
       />
+      <Stack.Screen
+        name="protected/preferencesSelectionScreen"
+        options={{
+          headerShown: false,
+        }}
+        listeners={{
+          focus: authGuard(user)
+        }}
+      />
     </Stack>
   );
 }

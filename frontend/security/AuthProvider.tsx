@@ -47,7 +47,6 @@ export const AuthProvider: FC<{ children: ReactNode }> = ({children}) => {
         await AsyncStorage.setItem(AUTH_TOKEN_KEY, response.token);
         await AsyncStorage.setItem(AUTH_USER_KEY, JSON.stringify(response.user));
 
-        router.navigate("/");
         return true;
       }
     } catch (error) {
