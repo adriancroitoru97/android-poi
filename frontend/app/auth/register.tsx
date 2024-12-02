@@ -20,11 +20,6 @@ export default function Register() {
     register({firstName: firstName, lastName: lastName, email: email, password: password}).then(r => {
       auth.login({email: email, password: password}).then(() => {
         router.navigate('/preferences-selection');
-        Toast.show({
-          type: 'success',
-          text1: 'Success',
-          text2: 'Pick your preferences now!',
-        });
       }).catch(e => {
         Toast.show({
           type: 'error',
