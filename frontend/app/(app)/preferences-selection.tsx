@@ -3,9 +3,11 @@ import {ScrollView, StyleSheet, View} from "react-native";
 import {Button, Chip, Text} from "react-native-paper";
 import {addPreferencesForUser, getAllPreferences} from "@/api";
 import {useAuth} from "@/security/AuthProvider";
+import {useRouter} from "expo-router";
 
 export default function PreferencesSelection() {
   const auth = useAuth();
+  const router = useRouter();
   const [preferences, setPreferences] = useState<string[]>([]);
   const [selectedPreferences, setSelectedPreferences] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
@@ -38,6 +40,7 @@ export default function PreferencesSelection() {
         {listOfPreferences: selectedPreferences},
         {userId: auth.user?.id ?? 0}
       );
+      router.navigate("/");
     } catch (error) {
       console.error("Error saving preferences:", error);
     } finally {
@@ -79,7 +82,11 @@ const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
     padding: 16,
+    alignItems: "center",
+    justifyContent: "space-between",
     backgroundColor: "#fff",
+    display: "flex",
+    paddingVertical: 80,
   },
   title: {
     textAlign: "center",
