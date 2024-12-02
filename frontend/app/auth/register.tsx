@@ -19,7 +19,7 @@ export default function Register() {
   const handleRegister = () => {
     register({firstName: firstName, lastName: lastName, email: email, password: password}).then(r => {
       auth.login({email: email, password: password}).then(() => {
-        router.navigate('/protected/PreferencesSelectionScreen');
+        router.navigate('/protected/preferences-selection');
         Toast.show({
           type: 'success',
           text1: 'Success',

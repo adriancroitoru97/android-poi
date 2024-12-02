@@ -4,7 +4,7 @@ import {Button, Chip, Text} from "react-native-paper";
 import {addPreferencesForUser, getAllPreferences} from "@/api";
 import {useAuth} from "@/security/AuthProvider";
 
-export default function PreferencesSelectionScreen() {
+export default function PreferencesSelection() {
   const auth = useAuth();
   const [preferences, setPreferences] = useState<string[]>([]);
   const [selectedPreferences, setSelectedPreferences] = useState<string[]>([]);

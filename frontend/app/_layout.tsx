@@ -1,8 +1,7 @@
-import {Stack, useRouter} from "expo-router";
+import {Stack} from "expo-router";
 import {MD3LightTheme, PaperProvider} from "react-native-paper";
 import Toast from "react-native-toast-message";
-import {AuthProvider, useAuth} from "@/security/AuthProvider";
-import {User} from "@/api";
+import {AuthProvider} from "@/security/AuthProvider";
 import {StatusBar} from "expo-status-bar";
 
 const theme = {
@@ -25,79 +24,13 @@ export default function RootLayout() {
           <Toast/>
         </AuthProvider>
       </PaperProvider>
-      <StatusBar />
+      <StatusBar/>
     </>
   );
 }
 
 function AppRoutes() {
-  const {user} = useAuth();
-
   return (
-    <Stack>
-      {/* Public routes */}
-      <Stack.Screen
-        name="auth/login"
-        options={{
-          headerShown: false,
-        }}
-        listeners={{
-          focus: noAuthGuard(user)
-        }}
-      />
-      <Stack.Screen
-        name="auth/register"
-        options={{
-          headerShown: false,
-        }}
-        listeners={{
-          focus: noAuthGuard(user)
-        }}
-      />
-      <Stack.Screen
-        name="index"
-        options={{
-          headerShown: false,
-        }}
-      />
-
-      {/* Protected routes */}
-      <Stack.Screen
-        name="protected/map"
-        options={{
-          headerShown: false,
-        }}
-        listeners={{
-          focus: authGuard(user)
-        }}
-      />
-      <Stack.Screen
-        name="protected/preferencesSelectionScreen"
-        options={{
-          headerShown: false,
-        }}
-        listeners={{
-          focus: authGuard(user)
-        }}
-      />
-    </Stack>
+    <Stack screenOptions={{headerShown: false}} />
   );
-}
-
-function authGuard(user?: User) {
-  const router = useRouter();
-  return () => {
-    if (!user) {
-      router.replace('/auth/login');
-    }
-  };
-}
-
-function noAuthGuard(user?: User) {
-  const router = useRouter();
-  return () => {
-    if (user) {
-      router.dismiss();
-    }
-  };
 }
