@@ -3,7 +3,7 @@ package com.ugabuga.android_poi.controllers;
 import com.ugabuga.android_poi.dto.ListOfPreferencesDTO;
 import com.ugabuga.android_poi.dto.PreferenceDTO;
 import com.ugabuga.android_poi.services.impl.PreferencesService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -11,10 +11,10 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/preference")
+@RequiredArgsConstructor
 public class PreferenceController {
 
-    @Autowired
-    private PreferencesService preferencesService;
+    private final PreferencesService preferencesService;
 
     @GetMapping("/getAllPreferences")
     public ResponseEntity<List<String>> getAllPreferences() {
