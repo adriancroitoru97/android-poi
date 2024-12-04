@@ -33,4 +33,5 @@ public class PreferenceController {
         return ResponseEntity.ok(preferencesService.addPreferencesForUser(userId, listOfPreferences.getListOfPreferences()));
 
     }
+
 }

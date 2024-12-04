@@ -35,17 +35,37 @@ public class PreferencesService implements IPreferencesService {
     @Override
     public String addPreferencesForUser(Integer userId, List<String> listOfPreferences) {
         User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("Utilizatorul cu id-ul " + userId + " nu a fost gasit!"));
+        List<Preference> userPreferences = user.getListOfPreference();
+
+        List<Preference> preferencesToRemove = new ArrayList<>();
+        for (Preference preference : userPreferences) {
+            if (!listOfPreferences.contains(preference.getPreferenceType().toString())) {
+                preferencesToRemove.add(preference);
+            }
+        }
+
+        // Remove preferences outside the loop
+        for (Preference preference : preferencesToRemove) {
+            userPreferences.remove(preference);
+            preferenceRepository.deleteById(preference.getId());
+        }
+
 
         try {
             for (String preference : listOfPreferences) {
                 PreferenceType preferenceType = PreferenceType.valueOf(preference);
-                Preference preferenceToAdd = new Preference();
+                Optional<Preference> preferenceOptional = userPreferences.stream().filter(p -> p.getPreferenceType().equals(preferenceType)).findFirst();
 
-                preferenceToAdd.setPreferenceType(preferenceType);
-                preferenceToAdd.setCount(1L);
-                preferenceRepository.saveAndFlush(preferenceToAdd);
-                user.getListOfPreference().add(preferenceToAdd);
+                if (preferenceOptional.isEmpty()) {
+                    Preference preferenceToAdd = new Preference();
+
+                    preferenceToAdd.setPreferenceType(preferenceType);
+                    preferenceToAdd.setCount(1L);
+                    preferenceRepository.saveAndFlush(preferenceToAdd);
+                    userPreferences.add(preferenceToAdd);
+                }
             }
+
 
             userRepository.saveAndFlush(user);
 
