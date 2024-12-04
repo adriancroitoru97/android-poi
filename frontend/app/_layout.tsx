@@ -1,8 +1,9 @@
 import {Stack} from "expo-router";
 import {MD3LightTheme, PaperProvider} from "react-native-paper";
 import Toast from "react-native-toast-message";
-import {AuthProvider} from "@/security/AuthProvider";
+import {AuthProvider, useAuth} from "@/security/AuthProvider";
 import {StatusBar} from "expo-status-bar";
+import {HeaderRightMenu} from "@/components/HeaderRightMenu";
 
 const theme = {
   ...MD3LightTheme,
@@ -30,7 +31,18 @@ export default function RootLayout() {
 }
 
 function AppRoutes() {
+  const auth = useAuth();
+
   return (
-    <Stack screenOptions={{headerShown: false}} />
+    <Stack screenOptions={{
+      headerShown: false,
+      headerStyle: {
+        backgroundColor: 'transparent',
+      },
+      headerRight: () => <HeaderRightMenu/>,
+      headerLeft: () => null,
+    }}>
+      <Stack.Screen name="index" options={{title: "Home", headerShown: auth.loggedIn}}/>
+    </Stack>
   );
 }

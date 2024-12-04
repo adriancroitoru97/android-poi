@@ -18,9 +18,7 @@ export default function Register() {
 
   const handleRegister = () => {
     register({firstName: firstName, lastName: lastName, email: email, password: password}).then(r => {
-      auth.login({email: email, password: password}).then(() => {
-        router.navigate('/preferences-selection');
-      }).catch(e => {
+      auth.login({email: email, password: password}).catch(e => {
         Toast.show({
           type: 'error',
           text1: 'Something went wrong',

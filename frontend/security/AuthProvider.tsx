@@ -10,6 +10,7 @@ interface AuthContextType {
   user?: User;
   login: (data: AuthenticationRequest) => Promise<boolean>;
   logout: () => void;
+  loggedIn: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -17,6 +18,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: FC<{ children: ReactNode }> = ({children}) => {
   const [user, setUser] = useState<User | undefined>();
   const [token, setToken] = useState<string | undefined>();
+  const [loggedIn, setLoggedIn] = useState<boolean>(false);
 
   const router = useRouter();
 
@@ -28,6 +30,7 @@ export const AuthProvider: FC<{ children: ReactNode }> = ({children}) => {
         if (storedToken && storedUser) {
           setToken(storedToken);
           setUser(JSON.parse(storedUser));
+          setLoggedIn(true);
         }
       } catch (error) {
         console.error('Failed to load auth data:', error);
@@ -47,6 +50,7 @@ export const AuthProvider: FC<{ children: ReactNode }> = ({children}) => {
         await AsyncStorage.setItem(AUTH_TOKEN_KEY, response.token);
         await AsyncStorage.setItem(AUTH_USER_KEY, JSON.stringify(response.user));
 
+        setLoggedIn(true);
         return true;
       }
     } catch (error) {
@@ -60,12 +64,13 @@ export const AuthProvider: FC<{ children: ReactNode }> = ({children}) => {
     setUser(undefined);
     setToken("");
     await AsyncStorage.multiRemove([AUTH_TOKEN_KEY, AUTH_USER_KEY]);
+    setLoggedIn(false);
     router.navigate("/");
   };
 
   return (
     <AuthContext.Provider
-      value={{token, user, login, logout}}
+      value={{token, user, login, logout, loggedIn}}
     >
       {children}
     </AuthContext.Provider>
