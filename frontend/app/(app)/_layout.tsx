@@ -1,6 +1,5 @@
 import {Redirect, Stack} from 'expo-router';
 import {useAuth} from "@/security/AuthProvider";
-import {HeaderRightMenu} from "@/components/HeaderRightMenu";
 
 export default function AppLayout() {
   const auth = useAuth();
@@ -11,11 +10,7 @@ export default function AppLayout() {
     return <Redirect href="/auth/login"/>;
   }
 
-  return <Stack
-    screenOptions={({route}) => ({
-      headerRight: () => <HeaderRightMenu/>,
-    })}
-  >
+  return <Stack>
     <Stack.Screen name="profile" options={{title: "Profile"}}/>
     <Stack.Screen name="preferences-selection" options={{title: "Preferences selection", headerShown: false}}/>
     {/*<Stack.Screen name="map" options={{title: "Map", headerShown: false}}/>*/}

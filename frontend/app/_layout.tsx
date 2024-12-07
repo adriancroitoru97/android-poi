@@ -3,7 +3,6 @@ import {MD3LightTheme, PaperProvider} from "react-native-paper";
 import Toast from "react-native-toast-message";
 import {AuthProvider, useAuth} from "@/security/AuthProvider";
 import {StatusBar} from "expo-status-bar";
-import {HeaderRightMenu} from "@/components/HeaderRightMenu";
 
 const theme = {
   ...MD3LightTheme,
@@ -36,7 +35,6 @@ function AppRoutes() {
   return (
     <Stack screenOptions={{
       headerShown: false,
-      headerRight: () => <HeaderRightMenu/>,
       headerLeft: () => null,
     }}>
       <Stack.Screen name="index" options={{title: "Home", headerShown: auth.loggedIn}}/>
