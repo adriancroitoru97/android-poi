@@ -36,9 +36,6 @@ function AppRoutes() {
   return (
     <Stack screenOptions={{
       headerShown: false,
-      headerStyle: {
-        backgroundColor: 'transparent',
-      },
       headerRight: () => <HeaderRightMenu/>,
       headerLeft: () => null,
     }}>

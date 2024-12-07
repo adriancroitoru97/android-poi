@@ -13,9 +13,6 @@ export default function AppLayout() {
 
   return <Stack
     screenOptions={({route}) => ({
-      headerStyle: {
-        backgroundColor: 'transparent',
-      },
       headerRight: () => <HeaderRightMenu/>,
     })}
   >
