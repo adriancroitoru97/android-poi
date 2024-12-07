@@ -57,12 +57,10 @@ export default function PreferencesSelection() {
         {preferences.map((preference) => (
           <Chip
             key={preference}
-            style={[
-              styles.chip,
-              selectedPreferences.includes(preference) && styles.selectedChip,
-            ]}
+            style={styles.chip}
             onPress={() => togglePreference(preference)}
-            selected={false} // Prevent default check mark
+            selected={selectedPreferences.includes(preference)}
+            selectedColor={"#298a47"}
           >
             {preference}
           </Chip>
@@ -106,11 +104,6 @@ const styles = StyleSheet.create({
     borderColor: "#ddd",
     borderWidth: 1,
     backgroundColor: "#f9f9f9",
-  },
-  selectedChip: {
-    borderColor: "#298a47", // Border color for selected state
-    backgroundColor: "#e8f5e9", // Light green background for selected state
-    borderWidth: 2, // Thicker border for emphasis
   },
   saveButton: {
     marginTop: 16,
