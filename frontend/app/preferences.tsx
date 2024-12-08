@@ -40,7 +40,8 @@ export default function PreferencesSelection() {
         {listOfPreferences: selectedPreferences},
         {userId: auth.user?.id ?? 0}
       );
-      router.navigate("/");
+      router.dismissAll();
+      router.replace("/");
     } catch (error) {
       console.error("Error saving preferences:", error);
     } finally {

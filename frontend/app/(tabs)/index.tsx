@@ -1,64 +1,37 @@
-import {Image, StyleSheet, Text, View} from "react-native";
+import {StyleSheet, Text, View} from "react-native";
 import {Button,} from "react-native-paper";
 import {useRouter} from "expo-router";
 import {useAuth} from "@/security/AuthProvider";
 import {User} from "@/api";
 
 export default function Index() {
+  const router = useRouter();
   const auth = useAuth();
 
   return (
     <View style={styles.container}>
-      {auth.user ? <HomeAuth/> : <HomeNoAuth/>}
-    </View>
-  );
-}
+      <View style={styles.loggedInHomeContainer}>
+        <UserView user={auth.user || {}}/>
 
-const HomeNoAuth = () => {
-  const router = useRouter();
-
-  return (
-    <>
-      <Image style={styles.logo} source={require("../assets/images/logo.png")}/>
-      <View style={styles.buttons}>
-        <Button icon="login" mode="elevated" style={styles.button} onPress={() => {
-          router.push("/auth/login")
-        }}>LOGIN</Button>
-        <Button icon="account" mode="contained" style={styles.button} onPress={() => {
-          router.push("/auth/register")
-        }}>REGISTER</Button>
-        <Button icon="map" mode="elevated" style={styles.button} onPress={() => {
-          router.push("/map")
-        }}>MAP</Button>
+        <View style={styles.buttons}>
+          <Button icon="logout" mode="elevated" style={styles.button} onPress={() => {
+            auth.logout();
+          }}>LOGOUT</Button>
+          <Button icon="map" mode="elevated" style={styles.button} onPress={() => {
+            router.push("/map")
+          }}>MAP</Button>
+        </View>
+        <View style={styles.buttons}>
+          <Button icon="login" mode="elevated" style={styles.button} onPress={() => {
+            router.push("/(auth)/login")
+          }}>LOGIN</Button>
+          <Button icon="account" mode="contained" style={styles.button} onPress={() => {
+            router.push("/(auth)/register")
+          }}>REGISTER</Button>
+        </View>
       </View>
-    </>
+    </View>
   );
-}
-
-const HomeAuth = () => {
-  const router = useRouter();
-  const auth = useAuth();
-
-  return <View style={styles.loggedInHomeContainer}>
-    <UserView user={auth.user || {}}/>
-
-    <View style={styles.buttons}>
-      <Button icon="logout" mode="elevated" style={styles.button} onPress={() => {
-        auth.logout();
-      }}>LOGOUT</Button>
-      <Button icon="map" mode="elevated" style={styles.button} onPress={() => {
-        router.push("/map")
-      }}>MAP</Button>
-    </View>
-    <View style={styles.buttons}>
-      <Button icon="login" mode="elevated" style={styles.button} onPress={() => {
-        router.push("/auth/login")
-      }}>LOGIN</Button>
-      <Button icon="account" mode="contained" style={styles.button} onPress={() => {
-        router.push("/auth/register")
-      }}>REGISTER</Button>
-    </View>
-  </View>
 }
 
 const UserView = ({user}: { user: User }) => {

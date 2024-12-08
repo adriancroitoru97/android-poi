@@ -59,7 +59,7 @@ export default function Login() {
             Login
           </Button>
           <Text style={styles.footerText}>
-            Don't have an account? <Text style={styles.link} onPress={() => router.navigate("/auth/register")}>Sign Up</Text>
+            Don't have an account? <Text style={styles.link} onPress={() => router.navigate("/(auth)/register")}>Sign Up</Text>
           </Text>
         </Card.Content>
       </Card>

@@ -1,4 +1,4 @@
-import {createContext, FC, ReactNode, useContext, useEffect, useState,} from "react";
+import React, {createContext, FC, ReactNode, useContext, useEffect, useState,} from "react";
 import {authenticate, AuthenticationRequest, User} from "@/api";
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -30,7 +30,6 @@ export const AuthProvider: FC<{ children: ReactNode }> = ({children}) => {
         if (storedToken && storedUser) {
           setToken(storedToken);
           setUser(JSON.parse(storedUser));
-          setLoggedIn(true);
         }
       } catch (error) {
         console.error('Failed to load auth data:', error);
@@ -61,10 +60,10 @@ export const AuthProvider: FC<{ children: ReactNode }> = ({children}) => {
   };
 
   const logout = async () => {
+    setLoggedIn(false);
     setUser(undefined);
     setToken("");
     await AsyncStorage.multiRemove([AUTH_TOKEN_KEY, AUTH_USER_KEY]);
-    setLoggedIn(false);
     router.navigate("/");
   };
 

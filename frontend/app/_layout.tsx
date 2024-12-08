@@ -33,11 +33,9 @@ function AppRoutes() {
   const auth = useAuth();
 
   return (
-    <Stack screenOptions={{
-      headerShown: false,
-      headerLeft: () => null,
-    }}>
-      <Stack.Screen name="index" options={{title: "Home", headerShown: auth.loggedIn}}/>
+    <Stack screenOptions={{headerShown: false}}>
+      <Stack.Screen name="(tabs)" options={{headerShown: false}}/>
+      <Stack.Screen name="(auth)"/>
     </Stack>
   );
 }
