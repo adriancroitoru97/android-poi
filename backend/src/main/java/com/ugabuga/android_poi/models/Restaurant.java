@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Data
@@ -44,11 +45,13 @@ public class Restaurant {
     @Column(name = "longitude")
     private Double longitude;
 
-    @ElementCollection
-    @CollectionTable(name = "restaurant_tags", joinColumns = @JoinColumn(name = "restaurant_id"))
-    @Column(name = "tag")
-    @Enumerated(EnumType.STRING)
-    private List<PreferenceType> tags;
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "restaurant_to_tags",
+            joinColumns = @JoinColumn(name = "restaurant_id"),
+            inverseJoinColumns = @JoinColumn(name = "tag_id")
+    )
+    private Set<Tag> tags;
 
     @Column(name = "vegetarian", nullable = false)
     private Boolean vegetarian;

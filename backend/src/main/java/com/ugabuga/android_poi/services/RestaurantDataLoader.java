@@ -2,21 +2,20 @@ package com.ugabuga.android_poi.services;
 
 import com.opencsv.CSVReader;
 import com.opencsv.CSVReaderBuilder;
-import com.opencsv.exceptions.CsvException;
 import com.ugabuga.android_poi.models.PreferenceType;
 import com.ugabuga.android_poi.models.Restaurant;
+import com.ugabuga.android_poi.models.Tag;
 import com.ugabuga.android_poi.repositories.RestaurantRepository;
+import com.ugabuga.android_poi.repositories.TagRepository;
+import jakarta.persistence.EntityManager;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
-import java.io.FileReader;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static io.micrometer.common.util.StringUtils.truncate;
@@ -24,9 +23,21 @@ import static io.micrometer.common.util.StringUtils.truncate;
 @Service
 public class RestaurantDataLoader {
     @Autowired
+    private EntityManager entityManager;
+
+    @Autowired
     private RestaurantRepository restaurantRepository;
 
+    @Autowired
+    private TagRepository tagRepository; // Repository to fetch or save Tag entities
+
+    @Transactional
     public void loadData(String csvFilePath) {
+        if (restaurantRepository.count() != 0) {
+            System.out.println("Data has already been loaded in the database.");
+            return;
+        }
+
         try {
             // Load file from the classpath
             ClassPathResource resource = new ClassPathResource(csvFilePath);
@@ -39,13 +50,18 @@ public class RestaurantDataLoader {
                 List<Restaurant> restaurants = new ArrayList<>();
                 String[] row;
                 int lineNumber = 0;
+                int cnt = 0;
 
                 // Process the CSV file row by row
                 while ((row = reader.readNext()) != null) {
                     lineNumber++; // Increment the line number
+                    cnt++;
                     System.out.println(lineNumber);
-                    if (lineNumber == 1033363) {
-                        System.out.println("shit");
+                    if(cnt % 2000 == 0) {
+                        cnt = 0;
+                        restaurantRepository.saveAll(restaurants);
+                        entityManager.clear();
+                        restaurants.clear();
                     }
                     if (lineNumber == 1) {
                         // Skip the header row
@@ -63,45 +79,24 @@ public class RestaurantDataLoader {
                         restaurant.setCity(row[5]);
                         restaurant.setAddress(truncate(row[6], 255));
 
-                        if (row[7].isEmpty()) {
-                            restaurant.setLatitude(null);
-                        } else {
-                            restaurant.setLatitude(Double.parseDouble(row[7]));
-                        }
-
-                        if (row[8].isEmpty()) {
-                            restaurant.setLongitude(null);
-                        } else {
-                            restaurant.setLongitude(Double.parseDouble(row[8]));
-                        }
+                        restaurant.setLatitude(row[7].isEmpty() ? null : Double.parseDouble(row[7]));
+                        restaurant.setLongitude(row[8].isEmpty() ? null : Double.parseDouble(row[8]));
 
                         // Split tags by commas and process
-                        if (row[9].isEmpty()) {
-                            restaurant.setTags(null);
-                        } else {
-                            List<PreferenceType> tags = Arrays.stream(row[9].split(","))
+                        if (!row[9].isEmpty()) {
+                            Set<Tag> tags = Arrays.stream(row[9].split(","))
                                     .map(String::trim)
-                                    .map(this::processTag) // Process each string
-                                    .map(PreferenceType::valueOf) // Map to enum
-                                    .toList();
+                                    .map(this::processTag)
+                                    .map(this::getOrCreateTag) // Fetch or create Tag entity
+                                    .filter(tag -> tag != null) // Remove invalid tags
+                                    .collect(Collectors.toSet());
                             restaurant.setTags(tags);
                         }
 
                         restaurant.setVegetarian(row[10].equalsIgnoreCase("Y"));
                         restaurant.setVegan(row[11].equalsIgnoreCase("Y"));
-
-                        if (row[12].isEmpty()) {
-                            restaurant.setAverageRating(null);
-                        } else {
-                            restaurant.setAverageRating(Double.parseDouble(row[12]));
-
-                        }
-
-                        if (row[13].isEmpty()) {
-                            restaurant.setTotalReviewsCount(null);
-                        } else {
-                            restaurant.setTotalReviewsCount(Integer.parseInt(row[13]));
-                        }
+                        restaurant.setAverageRating(row[12].isEmpty() ? null : Double.parseDouble(row[12]));
+                        restaurant.setTotalReviewsCount(row[13].isEmpty() ? null : Integer.parseInt(row[13]));
 
                         // Add the restaurant to the list
                         restaurants.add(restaurant);
@@ -131,5 +126,26 @@ public class RestaurantDataLoader {
                         .split("\\s+")) // Split by spaces
                 .map(word -> word.substring(0, 1).toUpperCase() + word.substring(1)) // Capitalize first letter
                 .collect(Collectors.joining()); // Join words without spaces
+    }
+
+    private Tag getOrCreateTag(String tagName) {
+        try {
+            // Validate against PreferenceType enum
+            PreferenceType.valueOf(tagName);
+
+            // Check if the tag already exists in the database
+            return tagRepository.findByName(PreferenceType.valueOf(tagName))
+                    .orElseGet(() -> {
+                        // Create and save a new tag
+                        Tag newTag = new Tag();
+                        newTag.setName(PreferenceType.valueOf(tagName));
+                        return tagRepository.save(newTag);
+                    });
+
+        } catch (IllegalArgumentException e) {
+            // Log invalid tag and skip
+            System.err.println("Invalid tag: " + tagName + " (processed as: " + tagName + ")");
+            return null;
+        }
     }
 }
