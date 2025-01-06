@@ -97,4 +97,23 @@ public class PreferencesService implements IPreferencesService {
         }
 
     }
+
+    @Override
+    public String increasePreferenceCountForUser(Integer userId, PreferenceDTO userPreference) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("Utilizatorul cu id-ul " + userId + " nu a fost gasit!"));
+        try {
+            List<Preference> userPreferences = user.getListOfPreference();
+            for (Preference preference : userPreferences) {
+                if (preference.getPreferenceType().equals(userPreference.getPreferenceType())) {
+                    preference.setCount(preference.getCount() + 1);
+                    break;
+                }
+            }
+            userRepository.saveAndFlush(user);
+            return "Preference: " + userPreference.getPreferenceType().toString() + " increased for user: " + user.getEmail() + " !";
+        } catch (RuntimeException e) {
+            return e.getMessage();
+        }
+
+    }
 }
