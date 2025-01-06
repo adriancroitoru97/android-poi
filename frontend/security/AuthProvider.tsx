@@ -30,9 +30,12 @@ export const AuthProvider: FC<{ children: ReactNode }> = ({children}) => {
         if (storedToken && storedUser) {
           setToken(storedToken);
           setUser(JSON.parse(storedUser));
+        } else {
+          await logout();
         }
       } catch (error) {
         console.error('Failed to load auth data:', error);
+        await logout();
       }
     };
 
@@ -51,8 +54,11 @@ export const AuthProvider: FC<{ children: ReactNode }> = ({children}) => {
 
         setLoggedIn(true);
         return true;
+      } else {
+        await logout();
       }
     } catch (error) {
+      await logout();
       return false;
     }
 
