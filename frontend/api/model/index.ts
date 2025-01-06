@@ -17,5 +17,8 @@ export * from './preferenceDTOPreferenceType';
 export * from './preferencePreferenceType';
 export * from './register200';
 export * from './registerRequest';
+export * from './restaurant';
+export * from './tag';
+export * from './tagName';
 export * from './user';
 export * from './userRole';
