@@ -109,18 +109,29 @@ public class PreferencesService implements IPreferencesService {
             List<Preference> userPreferences = user.getListOfPreference();
             Set<Tag> restaurantTags = restaurant.getTags();
 
-            for (Preference preference : userPreferences) {
-                for (Tag tag : restaurantTags) {
+            for (Tag tag : restaurantTags) {
+                boolean isNewPref = true;
+                for (Preference preference : userPreferences) {
                     if (preference.getPreferenceType().equals(tag.getName())) {
                         preference.setCount(preference.getCount() + 1);
+                        isNewPref = false;
+                        break;
                     }
                 }
+
+                if (isNewPref) {
+                    Preference preferenceToAdd = new Preference();
+                    preferenceToAdd.setPreferenceType(tag.getName());
+                    preferenceToAdd.setCount(1L);
+                    preferenceRepository.saveAndFlush(preferenceToAdd);
+                    userPreferences.add(preferenceToAdd);
+                }
             }
+
             userRepository.saveAndFlush(user);
             return "Preferences increased for user: " + user.getEmail() + " !";
         } catch (RuntimeException e) {
             return e.getMessage();
         }
-
     }
 }

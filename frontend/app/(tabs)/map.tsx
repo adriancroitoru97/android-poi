@@ -1,76 +1,131 @@
 import React, {useEffect, useRef, useState} from 'react';
-import {Button, ScrollView, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import {ActivityIndicator, Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import MapView, {Marker} from 'react-native-maps';
-import {getRestaurants, Restaurant} from '@/api';
+import {filterRestaurants, increasePreferenceCount, Restaurant} from '@/api';
+import * as Location from 'expo-location';
+import {useAuth} from "@/security/AuthProvider";
+import Toast from "react-native-toast-message";
+
+let debounceTimeout: NodeJS.Timeout | null = null; // Declare a debounce timeout variable
 
 export default function Map() {
   const mapRef = useRef<MapView>(null);
 
+  const auth = useAuth();
+
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [selectedRestaurant, setSelectedRestaurant] = useState<Restaurant | null>(null);
+  const [region, setRegion] = useState<{
+    latitude: number;
+    longitude: number;
+    latitudeDelta: number;
+    longitudeDelta: number;
+  } | null>(null);
+  const [loading, setLoading] = useState(false); // Track loading state
 
   useEffect(() => {
-    const fetchRestaurants = async () => {
+    const fetchUserLocation = async () => {
       try {
-        const rs = await getRestaurants();
-        setRestaurants(rs);
+        // Request location permissions
+        const {status} = await Location.requestForegroundPermissionsAsync();
+        if (status !== 'granted') {
+          Alert.alert('Permission Denied', 'Location permissions are required to use this feature.');
+          return;
+        }
+
+        // Fetch user location
+        const location = await Location.getCurrentPositionAsync({});
+        setRegion({
+          latitude: location.coords.latitude,
+          longitude: location.coords.longitude,
+          latitudeDelta: 0.0922,
+          longitudeDelta: 0.0421,
+        });
+
+        // Fetch initial restaurants near user's location
+        fetchRestaurants(location.coords.latitude, location.coords.longitude);
       } catch (error) {
-        console.error('Error fetching restaurants:', error);
+        console.error('Error fetching user location:', error);
       }
     };
 
-    fetchRestaurants();
+    fetchUserLocation();
   }, []);
 
-  const centerMarkers = () => {
-    if (restaurants.length > 0) {
-      mapRef.current?.fitToCoordinates(
-        restaurants.map((r) => ({
-          latitude: r.latitude || 0,
-          longitude: r.longitude || 0,
-        })),
-        {
-          edgePadding: {top: 50, right: 50, bottom: 50, left: 50},
-          animated: true,
-        }
-      );
+  const fetchRestaurants = async (latitude: number, longitude: number) => {
+    if (selectedRestaurant) return;
+    setLoading(true); // Start loading
+    try {
+      const rs = await filterRestaurants({latitude, longitude, size: 250});
+      rs.content && setRestaurants(rs.content);
+    } catch (error) {
+      console.error('Error fetching restaurants:', error);
+    } finally {
+      setLoading(false); // Stop loading
     }
+  };
+
+  const handleRegionChangeComplete = (region: {
+    latitude: number;
+    longitude: number;
+    latitudeDelta: number;
+    longitudeDelta: number;
+  }) => {
+    setRegion(region);
+
+    // Clear any existing debounce timeout
+    if (debounceTimeout) {
+      clearTimeout(debounceTimeout);
+    }
+
+    // Set a new debounce timeout for 500ms
+    debounceTimeout = setTimeout(() => {
+      fetchRestaurants(region.latitude, region.longitude);
+    }, 750);
   };
 
   return (
     <View style={styles.container}>
-      <MapView
-        ref={mapRef}
-        style={styles.map}
-        initialRegion={{
-          latitude: 37.78825,
-          longitude: -122.4324,
-          latitudeDelta: 0.0922,
-          longitudeDelta: 0.0421,
-        }}
-      >
-        {restaurants.map((restaurant, index) => (
-          <Marker
-            key={index}
-            coordinate={{
-              latitude: restaurant.latitude || 0,
-              longitude: restaurant.longitude || 0,
-            }}
-            title={restaurant.name}
-            description={restaurant.address}
-            onPress={() => setSelectedRestaurant(restaurant)}
-          />
-        ))}
-      </MapView>
-
-      <View style={styles.buttonContainer}>
-        <Button title="Center Markers" onPress={centerMarkers}/>
-      </View>
+      {region ? (
+        <>
+          <MapView
+            ref={mapRef}
+            style={styles.map}
+            initialRegion={region}
+            onRegionChangeComplete={handleRegionChangeComplete}
+            scrollEnabled={!loading} // Disable interaction during loading
+            zoomEnabled={!loading} // Disable zoom
+            showsUserLocation
+            rotateEnabled={false}
+            // moveOnMarkerPress={false}
+          >
+            {restaurants.map((restaurant, index) => (
+              <Marker
+                key={index}
+                coordinate={{
+                  latitude: restaurant.latitude || 0,
+                  longitude: restaurant.longitude || 0,
+                }}
+                // title={restaurant.name}
+                // description={restaurant.address}
+                onPress={() => setSelectedRestaurant(restaurant)}
+              />
+            ))}
+          </MapView>
+          {loading && (
+            <View style={styles.loadingOverlay}>
+              <ActivityIndicator size="large" color="#0000ff"/>
+              <Text style={styles.loadingText}>Loading restaurants...</Text>
+            </View>
+          )}
+        </>
+      ) : (
+        <Text style={styles.loadingText}>Fetching location...</Text>
+      )}
 
       {/* Popup View */}
       {selectedRestaurant && (
         <View style={styles.popup}>
-          {/* Close Button at the Top */}
           <TouchableOpacity style={styles.topCloseButton} onPress={() => setSelectedRestaurant(null)}>
             <Text style={styles.topCloseButtonText}>✕</Text>
           </TouchableOpacity>
@@ -97,7 +152,7 @@ export default function Map() {
                 <Text style={styles.label}>Open Hours:</Text> {selectedRestaurant.openHours}
               </Text>
             )}
-            {selectedRestaurant.averageRating !== undefined && (
+            {selectedRestaurant.averageRating !== undefined && selectedRestaurant.averageRating !== null && (
               <Text style={styles.popupText}>
                 <Text style={styles.label}>Average Rating:</Text> {selectedRestaurant.averageRating.toFixed(1)} ⭐️
               </Text>
@@ -121,10 +176,13 @@ export default function Map() {
             )}
           </ScrollView>
 
-          {/* Visit Button */}
           <TouchableOpacity style={styles.visitButton} onPress={() => {
+            increasePreferenceCount({userId: auth.user?.id || 0, restaurantId: selectedRestaurant?.id || -1}).then(() => {
+              Toast.show({type: 'success', text1: 'Restaurant marked as liked!'});
+              setSelectedRestaurant(null);
+            })
           }}>
-            <Text style={styles.visitButtonText}>Visit</Text>
+            <Text style={styles.visitButtonText}>Like</Text>
           </TouchableOpacity>
         </View>
       )}
@@ -144,6 +202,21 @@ const styles = StyleSheet.create({
     bottom: 20,
     left: 20,
     right: 20,
+  },
+  loadingOverlay: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: 'rgba(255, 255, 255, 0.7)', // Semi-transparent background
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 16,
+    color: '#333',
   },
   popup: {
     position: 'absolute',
@@ -173,27 +246,6 @@ const styles = StyleSheet.create({
   label: {
     fontWeight: 'bold',
   },
-  closeButton: {
-    alignSelf: 'flex-end',
-    padding: 10,
-    backgroundColor: '#2196F3',
-    borderRadius: 5,
-    marginTop: 10,
-  },
-  closeButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
-  },
-  linkButton: {
-    marginTop: 10,
-    padding: 10,
-    backgroundColor: '#007BFF',
-    borderRadius: 5,
-  },
-  linkText: {
-    color: '#fff',
-    textAlign: 'center',
-  },
   topCloseButton: {
     position: 'absolute',
     top: 15,
@@ -204,7 +256,7 @@ const styles = StyleSheet.create({
     height: 30,
     justifyContent: 'center',
     alignItems: 'center',
-    zIndex: 1, // Ensures the button is above other elements
+    zIndex: 1,
   },
   topCloseButtonText: {
     color: '#fff',
@@ -214,15 +266,15 @@ const styles = StyleSheet.create({
   visitButton: {
     marginTop: 10,
     backgroundColor: '#4CAF50',
-    paddingVertical: 8, // Reduced vertical padding
-    paddingHorizontal: 15, // Added horizontal padding for balance
+    paddingVertical: 8,
+    paddingHorizontal: 15,
     borderRadius: 5,
     alignItems: 'center',
-    alignSelf: 'flex-start', // Makes the button smaller by not stretching across the container
+    alignSelf: 'flex-start',
   },
   visitButtonText: {
     color: '#fff',
-    fontSize: 14, // Reduced font size
+    fontSize: 14,
     fontWeight: 'bold',
   },
 });
