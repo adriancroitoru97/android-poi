@@ -60,7 +60,8 @@ public class RestaurantDataLoader {
                     if(cnt % 2000 == 0) {
                         cnt = 0;
                         restaurantRepository.saveAll(restaurants);
-                        entityManager.clear();
+                        entityManager.flush(); // Write changes to the database
+                        entityManager.clear(); // Detach all entities
                         restaurants.clear();
                     }
                     if (lineNumber == 1) {

@@ -31,7 +31,7 @@ public class DataLoader implements CommandLineRunner {
         String csvFilePath = "restaurants.csv"; // Replace with your actual path
         restaurantDataLoader.loadData(csvFilePath);
 
-        fetchRestaurantWithTags(1053109L);
+        //fetchRestaurantWithTags(1053109L);
     }
 
     private void fetchRestaurantWithTags(long restaurantId) {
