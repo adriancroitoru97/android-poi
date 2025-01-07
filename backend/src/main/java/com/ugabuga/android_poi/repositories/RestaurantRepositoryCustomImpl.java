@@ -19,12 +19,13 @@ public class RestaurantRepositoryCustomImpl implements RestaurantRepositoryCusto
 
     @Override
     public Page<Restaurant> filterByCriteria(String name, String tag, String city, Boolean vegetarian, Boolean vegan,
-                                                Double averageRating, Integer totalReviewsCount,
-                                                Double latitude, Double longitude, Double radius, Pageable pageable) {
+                                             Double averageRating, Integer totalReviewsCount,
+                                             Double latitude, Double longitude, Double radius, Pageable pageable) {
         StringBuilder sql = new StringBuilder(
                 "SELECT r.id, r.restaurant_link, r.name, r.country, r.region, r.province, r.city, " +
                         "r.address, r.latitude, r.longitude, r.vegetarian, r.vegan, r.open_hours, " +
-                        "r.average_rating, r.total_reviews_count " +
+                        "r.average_rating, r.total_reviews_count, " +
+                        "ST_DistanceSphere(ST_MakePoint(r.longitude, r.latitude), ST_MakePoint(:longitude, :latitude)) AS distance " +
                         "FROM restaurant r "
         );
 
@@ -63,7 +64,6 @@ public class RestaurantRepositoryCustomImpl implements RestaurantRepositoryCusto
             whereClause.append("AND r.total_reviews_count >= :totalReviewsCount ");
         }
         if (latitude != null && longitude != null) {
-            // Add geospatial filtering for circular area
             whereClause.append(
                     "AND ST_DistanceSphere(ST_MakePoint(r.longitude, r.latitude), ST_MakePoint(:longitude, :latitude)) <= :radius "
             );
@@ -72,6 +72,9 @@ public class RestaurantRepositoryCustomImpl implements RestaurantRepositoryCusto
         // Add the WHERE clause to both queries
         sql.append(whereClause);
         countSql.append(whereClause);
+
+        // Add ordering by distance
+        sql.append("ORDER BY distance ASC ");
 
         // Add pagination to the main query
         sql.append("LIMIT :limit OFFSET :offset");
@@ -124,5 +127,4 @@ public class RestaurantRepositoryCustomImpl implements RestaurantRepositoryCusto
         // Return the paginated result
         return new PageImpl<>(restaurants, pageable, total);
     }
-
 }
