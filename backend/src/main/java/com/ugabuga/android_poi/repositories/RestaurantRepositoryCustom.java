@@ -7,5 +7,5 @@ import org.springframework.data.domain.Pageable;
 public interface RestaurantRepositoryCustom {
     Page<Restaurant> filterByCriteria(String name, String tag, String city, Boolean vegetarian, Boolean vegan,
                                       Double averageRating, Integer totalReviewsCount,
-                                      Double latitude, Double longitude, Pageable pageable);
+                                      Double latitude, Double longitude, Double radius, Pageable pageable);
 }

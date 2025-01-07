@@ -66,11 +66,12 @@ public class RestaurantController {
             @RequestParam(required = false) Integer totalReviewsCount,
             @RequestParam(required = false) Double latitude,
             @RequestParam(required = false) Double longitude,
+            @RequestParam(required = false) Double radius,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
         Pageable pageable = PageRequest.of(page, size);
         Page<Restaurant> filteredRestaurants = restaurantService.filterRestaurants(name, tag, city, vegetarian, vegan,
-                averageRating, totalReviewsCount, latitude, longitude, pageable);
+                averageRating, totalReviewsCount, latitude, longitude, radius, pageable);
         return ResponseEntity.ok(filteredRestaurants);
     }
 }

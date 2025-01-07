@@ -32,8 +32,8 @@ public class RestaurantService  {
 
     public Page<Restaurant> filterRestaurants(String name, String tag, String city, Boolean vegetarian, Boolean vegan,
                                               Double averageRating, Integer totalReviewsCount,
-                                              Double latitude, Double longitude, Pageable pageable) {
+                                              Double latitude, Double longitude, Double radius, Pageable pageable) {
         return restaurantRepository.filterByCriteria(name, tag, city, vegetarian, vegan, averageRating, totalReviewsCount,
-                latitude, longitude, pageable);
+                latitude, longitude, radius, pageable);
     }
 }
