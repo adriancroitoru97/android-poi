@@ -8,8 +8,13 @@ import type {
   AddPreferencesForUserParams,
   AuthenticationRequest,
   AuthenticationResponse,
+  FilterRestaurantsParams,
+  GetAllRestaurantsParams,
   GetPreferencesByUserIdParams,
+  GetRestaurantsByTagParams,
+  IncreasePreferenceCountParams,
   ListOfPreferencesDTO,
+  PageRestaurant,
   PreferenceDTO,
   Register200,
   RegisterRequest
@@ -21,7 +26,17 @@ import { customInstance } from '../security/axiosConfig';
 type SecondParameter<T extends (...args: any) => any> = Parameters<T>[1];
 
 
-  export const addPreferencesForUser = (
+  export const increasePreferenceCount = (
+    params: IncreasePreferenceCountParams,
+ options?: SecondParameter<typeof customInstance>,) => {
+      return customInstance<string>(
+      {url: `http://192.168.0.101:8080/api/v1/preference/increasePreferenceCountForUser`, method: 'POST',
+        params
+    },
+      options);
+    }
+  
+export const addPreferencesForUser = (
     listOfPreferencesDTO: ListOfPreferencesDTO,
     params: AddPreferencesForUserParams,
  options?: SecondParameter<typeof customInstance>,) => {
@@ -56,6 +71,36 @@ export const authenticate = (
       options);
     }
   
+export const getRestaurantsByTag = (
+    params: GetRestaurantsByTagParams,
+ options?: SecondParameter<typeof customInstance>,) => {
+      return customInstance<PageRestaurant>(
+      {url: `http://192.168.0.101:8080/api/v1/restaurants/getByTag`, method: 'GET',
+        params
+    },
+      options);
+    }
+  
+export const getAllRestaurants = (
+    params?: GetAllRestaurantsParams,
+ options?: SecondParameter<typeof customInstance>,) => {
+      return customInstance<PageRestaurant>(
+      {url: `http://192.168.0.101:8080/api/v1/restaurants/getAll`, method: 'GET',
+        params
+    },
+      options);
+    }
+  
+export const filterRestaurants = (
+    params?: FilterRestaurantsParams,
+ options?: SecondParameter<typeof customInstance>,) => {
+      return customInstance<PageRestaurant>(
+      {url: `http://192.168.0.101:8080/api/v1/restaurants/filter`, method: 'GET',
+        params
+    },
+      options);
+    }
+  
 export const getPreferencesByUserId = (
     params: GetPreferencesByUserIdParams,
  options?: SecondParameter<typeof customInstance>,) => {
@@ -75,8 +120,12 @@ export const getAllPreferences = (
       options);
     }
   
+export type IncreasePreferenceCountResult = NonNullable<Awaited<ReturnType<typeof increasePreferenceCount>>>
 export type AddPreferencesForUserResult = NonNullable<Awaited<ReturnType<typeof addPreferencesForUser>>>
 export type RegisterResult = NonNullable<Awaited<ReturnType<typeof register>>>
 export type AuthenticateResult = NonNullable<Awaited<ReturnType<typeof authenticate>>>
+export type GetRestaurantsByTagResult = NonNullable<Awaited<ReturnType<typeof getRestaurantsByTag>>>
+export type GetAllRestaurantsResult = NonNullable<Awaited<ReturnType<typeof getAllRestaurants>>>
+export type FilterRestaurantsResult = NonNullable<Awaited<ReturnType<typeof filterRestaurants>>>
 export type GetPreferencesByUserIdResult = NonNullable<Awaited<ReturnType<typeof getPreferencesByUserId>>>
 export type GetAllPreferencesResult = NonNullable<Awaited<ReturnType<typeof getAllPreferences>>>
