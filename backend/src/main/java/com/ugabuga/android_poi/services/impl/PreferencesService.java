@@ -1,11 +1,10 @@
 package com.ugabuga.android_poi.services.impl;
 
 import com.ugabuga.android_poi.dto.PreferenceDTO;
-import com.ugabuga.android_poi.models.Preference;
-import com.ugabuga.android_poi.models.PreferenceType;
-import com.ugabuga.android_poi.models.User;
+import com.ugabuga.android_poi.models.*;
 import com.ugabuga.android_poi.repositories.IPreferenceRepository;
 import com.ugabuga.android_poi.repositories.IUserRepository;
+import com.ugabuga.android_poi.repositories.RestaurantRepository;
 import com.ugabuga.android_poi.services.IPreferencesService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -13,6 +12,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 public class PreferencesService implements IPreferencesService {
@@ -22,6 +22,9 @@ public class PreferencesService implements IPreferencesService {
 
     @Autowired
     private IPreferenceRepository preferenceRepository;
+
+    @Autowired
+    private RestaurantRepository restaurantRepository;
 
     @Override
     public List<String> getPreferenceTypes() {
@@ -94,6 +97,29 @@ public class PreferencesService implements IPreferencesService {
             return preferenceDTOList;
         } catch (RuntimeException e) {
             throw new RuntimeException(e.getMessage());
+        }
+
+    }
+
+    @Override
+    public String increasePreferenceCountForUser(Integer userId, Long restaurantId) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("Utilizatorul cu id-ul " + userId + " nu a fost gasit!"));
+        Restaurant restaurant = restaurantRepository.findById(restaurantId).orElseThrow(() -> new RuntimeException("Utilizatorul cu id-ul " + restaurantId + " nu a fost gasit!"));
+        try {
+            List<Preference> userPreferences = user.getListOfPreference();
+            Set<Tag> restaurantTags = restaurant.getTags();
+
+            for (Preference preference : userPreferences) {
+                for (Tag tag : restaurantTags) {
+                    if (preference.getPreferenceType().equals(tag.getName())) {
+                        preference.setCount(preference.getCount() + 1);
+                    }
+                }
+            }
+            userRepository.saveAndFlush(user);
+            return "Preferences increased for user: " + user.getEmail() + " !";
+        } catch (RuntimeException e) {
+            return e.getMessage();
         }
 
     }

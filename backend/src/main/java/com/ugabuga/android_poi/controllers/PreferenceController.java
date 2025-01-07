@@ -34,4 +34,11 @@ public class PreferenceController {
 
     }
 
+    @PostMapping("/increasePreferenceCountForUser")
+    public ResponseEntity<String> increasePreferenceCount(@RequestParam(name = "userId") Integer userId,
+                                                          @RequestParam (name = "restaurantId") Long restaurantId) {
+        return ResponseEntity.ok(preferencesService.increasePreferenceCountForUser(userId, restaurantId));
+    }
+
+
 }
