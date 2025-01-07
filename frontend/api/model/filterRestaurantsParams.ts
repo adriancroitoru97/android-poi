@@ -15,6 +15,7 @@ averageRating?: number;
 totalReviewsCount?: number;
 latitude?: number;
 longitude?: number;
+radius?: number;
 page?: number;
 size?: number;
 };

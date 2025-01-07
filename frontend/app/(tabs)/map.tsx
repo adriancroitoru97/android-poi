@@ -43,7 +43,7 @@ export default function Map() {
         });
 
         // Fetch initial restaurants near user's location
-        fetchRestaurants(location.coords.latitude, location.coords.longitude);
+        fetchRestaurants(location.coords.latitude, location.coords.longitude, 5000);
       } catch (error) {
         console.error('Error fetching user location:', error);
       }
@@ -52,11 +52,17 @@ export default function Map() {
     fetchUserLocation();
   }, []);
 
-  const fetchRestaurants = async (latitude: number, longitude: number) => {
+  const computeRadius = (latitudeDelta: number) => {
+    // Convert latitudeDelta to radius in meters
+    return (latitudeDelta / 2) * 111000;
+  };
+
+  const fetchRestaurants = async (latitude: number, longitude: number, radius: number) => {
     if (selectedRestaurant) return;
     setLoading(true); // Start loading
+    console.log(radius);
     try {
-      const rs = await filterRestaurants({latitude, longitude, size: 250});
+      const rs = await filterRestaurants({latitude, longitude, radius, size: 250});
       rs.content && setRestaurants(rs.content);
     } catch (error) {
       console.error('Error fetching restaurants:', error);
@@ -80,7 +86,8 @@ export default function Map() {
 
     // Set a new debounce timeout for 500ms
     debounceTimeout = setTimeout(() => {
-      fetchRestaurants(region.latitude, region.longitude);
+      const radius = computeRadius(region.latitudeDelta);
+      fetchRestaurants(region.latitude, region.longitude, radius);
     }, 750);
   };
 
@@ -177,7 +184,10 @@ export default function Map() {
           </ScrollView>
 
           <TouchableOpacity style={styles.visitButton} onPress={() => {
-            increasePreferenceCount({userId: auth.user?.id || 0, restaurantId: selectedRestaurant?.id || -1}).then(() => {
+            increasePreferenceCount({
+              userId: auth.user?.id || 0,
+              restaurantId: selectedRestaurant?.id || -1
+            }).then(() => {
               Toast.show({type: 'success', text1: 'Restaurant marked as liked!'});
               setSelectedRestaurant(null);
             })
