@@ -17,6 +17,7 @@ public class Preference {
     private Long id;
 
     @Column(name = "name")
+    @Enumerated
     private PreferenceType preferenceType;
 
     @Column(name = "count")

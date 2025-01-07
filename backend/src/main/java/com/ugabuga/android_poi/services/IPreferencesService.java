@@ -13,5 +13,5 @@ public interface IPreferencesService {
 
     List<PreferenceDTO> getPreferencesByUserId(Integer userId);
 
-    String increasePreferenceCountForUser(Integer userId, PreferenceDTO userPreference);
+    String increasePreferenceCountForUser(Integer userId, Long restaurantId);
 }
