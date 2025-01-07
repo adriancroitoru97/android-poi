@@ -60,9 +60,13 @@ export default function Map() {
   const fetchRestaurants = async (latitude: number, longitude: number, radius: number) => {
     if (selectedRestaurant) return;
     setLoading(true); // Start loading
-    console.log(radius);
+
+    // Dynamically adjust `size` based on the radius
+    const size = Math.min(1000, Math.max(50, Math.floor((radius / 1000) * 10))); // Example formula
+    console.log(`Fetching restaurants with size: ${size} and radius: ${radius}`);
+
     try {
-      const rs = await filterRestaurants({latitude, longitude, radius, size: 250});
+      const rs = await filterRestaurants({latitude, longitude, radius, size});
       rs.content && setRestaurants(rs.content);
     } catch (error) {
       console.error('Error fetching restaurants:', error);
