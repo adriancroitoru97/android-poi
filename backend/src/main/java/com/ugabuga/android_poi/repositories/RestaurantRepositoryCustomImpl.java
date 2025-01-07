@@ -16,12 +16,11 @@ import java.util.List;
 public class RestaurantRepositoryCustomImpl implements RestaurantRepositoryCustom {
 
     private final EntityManager entityManager;
-    private final Integer SEARCH_RADIUS = 100_000; // 100 km in meters
 
     @Override
     public Page<Restaurant> filterByCriteria(String name, String tag, String city, Boolean vegetarian, Boolean vegan,
                                                 Double averageRating, Integer totalReviewsCount,
-                                                Double latitude, Double longitude, Pageable pageable) {
+                                                Double latitude, Double longitude, Double radius, Pageable pageable) {
         StringBuilder sql = new StringBuilder(
                 "SELECT r.id, r.restaurant_link, r.name, r.country, r.region, r.province, r.city, " +
                         "r.address, r.latitude, r.longitude, r.vegetarian, r.vegan, r.open_hours, " +
@@ -90,7 +89,11 @@ public class RestaurantRepositoryCustomImpl implements RestaurantRepositoryCusto
         if (latitude != null && longitude != null) {
             query.setParameter("latitude", latitude);
             query.setParameter("longitude", longitude);
-            query.setParameter("radius", SEARCH_RADIUS);
+
+            if (radius == null) {
+                radius = 1_000.0; // 1 km in meters
+            }
+            query.setParameter("radius", radius);
         }
 
         query.setParameter("limit", pageable.getPageSize());
