@@ -63,7 +63,6 @@ export default function Map() {
 
     // Dynamically adjust `size` based on the radius
     const size = Math.min(1000, Math.max(50, Math.floor((radius / 1000) * 10)));
-    console.log(`Fetching restaurants with size: ${size} and radius: ${radius}`);
 
     try {
       const rs = await filterRestaurants({latitude, longitude, radius, size});
