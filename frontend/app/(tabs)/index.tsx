@@ -1,8 +1,9 @@
 import React from "react";
-import {Button, StyleSheet, Text, View} from "react-native";
+import {StyleSheet, Text, View} from "react-native";
 import {useRouter} from "expo-router";
 import {useAuth} from "@/security/AuthProvider";
 import {User} from "@/api";
+import {Button} from "react-native-paper";
 
 export default function Index() {
   const router = useRouter();
@@ -17,6 +18,16 @@ export default function Index() {
     <View style={styles.container}>
       <View style={styles.loggedInHomeContainer}>
         <UserView user={auth.user || {}} onLogout={handleLogout}/>
+        {/* Buttons */}
+        <View style={userViewStyles.buttonsContainer}>
+          <Button
+            mode="outlined"
+            style={styles.logoutButton}
+            onPress={() => auth.logout()}
+          >
+            Logout
+          </Button>
+        </View>
       </View>
     </View>
   );
@@ -55,11 +66,6 @@ const UserView = ({
             Account Status: {user.enabled ? "Enabled" : "Disabled"}
           </Text>
         )}
-      </View>
-
-      {/* Buttons */}
-      <View style={userViewStyles.buttonsContainer}>
-        <Button title="Logout" onPress={onLogout} color="#d9534f"/>
       </View>
     </View>
   );
@@ -108,5 +114,10 @@ const styles = StyleSheet.create({
   loggedInHomeContainer: {
     flex: 1,
     justifyContent: "center",
+  },
+  logoutButton: {
+    marginVertical: 8,
+    marginBottom: 24,
+    width: "80%",
   },
 });

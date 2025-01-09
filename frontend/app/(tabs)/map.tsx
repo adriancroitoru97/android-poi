@@ -5,10 +5,13 @@ import {filterRestaurants, increasePreferenceCount, Restaurant} from '@/api';
 import * as Location from 'expo-location';
 import {useAuth} from "@/security/AuthProvider";
 import Toast from "react-native-toast-message";
+import {useTheme} from "react-native-paper";
 
 let debounceTimeout: NodeJS.Timeout | null = null; // Declare a debounce timeout variable
 
 export default function Map() {
+  const theme = useTheme();
+
   const mapRef = useRef<MapView>(null);
 
   const auth = useAuth();
@@ -124,13 +127,18 @@ export default function Map() {
           </MapView>
           {loading && (
             <View style={styles.loadingOverlay}>
-              <ActivityIndicator size="large" color="#0000ff"/>
+              <ActivityIndicator size="large" color={theme.colors.primary}/>
               <Text style={styles.loadingText}>Loading restaurants...</Text>
             </View>
           )}
         </>
       ) : (
-        <Text style={styles.loadingText}>Fetching location...</Text>
+        <>
+          <View style={styles.loadingOverlay}>
+            <ActivityIndicator size="large" color={theme.colors.primary}/>
+            <Text style={styles.loadingText}>Fetching location...</Text>
+          </View>
+        </>
       )}
 
       {/* Popup View */}

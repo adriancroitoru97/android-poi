@@ -89,13 +89,6 @@ export default function Profile() {
         <Text style={styles.email}>{auth.user?.email}</Text>
 
         <Button
-          mode="contained"
-          style={styles.editButton}
-          onPress={() => console.log("Edit Profile")}
-        >
-          Edit Profile
-        </Button>
-        <Button
           mode="outlined"
           style={styles.logoutButton}
           onPress={() => auth.logout()}
@@ -168,10 +161,6 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     textAlign: "center",
   },
-  editButton: {
-    marginTop: 16,
-    width: "80%",
-  },
   logoutButton: {
     marginTop: 8,
     width: "80%",
@@ -183,7 +172,7 @@ const styles = StyleSheet.create({
     marginVertical: 32,
   },
   preferencesSection: {
-    maxHeight: "50%",
+    maxHeight: "57%",
     width: "100%",
     paddingBottom: 48,
   },
