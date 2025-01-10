@@ -9,6 +9,7 @@ import type {
   AuthenticationRequest,
   AuthenticationResponse,
   FilterRestaurantsParams,
+  FilterRestaurantsWithScoresParams,
   GetAllRestaurantsParams,
   GetPreferencesByUserIdParams,
   GetRestaurantsByTagParams,
@@ -101,6 +102,16 @@ export const filterRestaurants = (
       options);
     }
   
+export const filterRestaurantsWithScores = (
+    params?: FilterRestaurantsWithScoresParams,
+ options?: SecondParameter<typeof customInstance>,) => {
+      return customInstance<PageRestaurant>(
+      {url: `http://192.168.0.104:8080/api/v1/restaurants/filterWithScores`, method: 'GET',
+        params
+    },
+      options);
+    }
+  
 export const getPreferencesByUserId = (
     params: GetPreferencesByUserIdParams,
  options?: SecondParameter<typeof customInstance>,) => {
@@ -127,5 +138,6 @@ export type AuthenticateResult = NonNullable<Awaited<ReturnType<typeof authentic
 export type GetRestaurantsByTagResult = NonNullable<Awaited<ReturnType<typeof getRestaurantsByTag>>>
 export type GetAllRestaurantsResult = NonNullable<Awaited<ReturnType<typeof getAllRestaurants>>>
 export type FilterRestaurantsResult = NonNullable<Awaited<ReturnType<typeof filterRestaurants>>>
+export type FilterRestaurantsWithScoresResult = NonNullable<Awaited<ReturnType<typeof filterRestaurantsWithScores>>>
 export type GetPreferencesByUserIdResult = NonNullable<Awaited<ReturnType<typeof getPreferencesByUserId>>>
 export type GetAllPreferencesResult = NonNullable<Awaited<ReturnType<typeof getAllPreferences>>>

@@ -17,6 +17,7 @@ export interface Restaurant {
   name?: string;
   openHours?: string;
   province?: string;
+  recommendationScore?: number;
   region?: string;
   restaurantLink?: string;
   tags?: Tag[];

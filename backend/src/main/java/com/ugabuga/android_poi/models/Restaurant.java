@@ -68,4 +68,6 @@ public class Restaurant {
     @Column(name = "total_reviews_count")
     private Integer totalReviewsCount;
 
+    @Transient
+    private Double recommendationScore; // Dynamically calculated
 }

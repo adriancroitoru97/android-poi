@@ -1,7 +1,7 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {ActivityIndicator, Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import MapView, {Marker} from 'react-native-maps';
-import {filterRestaurants, increasePreferenceCount, Restaurant} from '@/api';
+import {filterRestaurantsWithScores, increasePreferenceCount, Restaurant} from '@/api';
 import * as Location from 'expo-location';
 import {useAuth} from "@/security/AuthProvider";
 import Toast from "react-native-toast-message";
@@ -68,7 +68,7 @@ export default function Map() {
     const size = Math.min(1000, Math.max(50, Math.floor((radius / 1000) * 10)));
 
     try {
-      const rs = await filterRestaurants({latitude, longitude, radius, size});
+      const rs = await filterRestaurantsWithScores({latitude, longitude, radius, size});
       rs.content && setRestaurants(rs.content);
     } catch (error) {
       console.error('Error fetching restaurants:', error);
@@ -97,6 +97,19 @@ export default function Map() {
     }, 750);
   };
 
+  const sortedRestaurants = [...restaurants].sort((a, b) => {
+    const scoreDiff = (b.recommendationScore || 0) - (a.recommendationScore || 0);
+    if (scoreDiff !== 0) return scoreDiff;
+
+    // Secondary sorting by average rating
+    const ratingDiff = (b.averageRating || 0) - (a.averageRating || 0);
+    if (ratingDiff !== 0) return ratingDiff;
+
+    // Optional: Tertiary sorting by name for stability
+    return a.name?.localeCompare(b.name || "") || 0;
+  });
+
+
   return (
     <View style={styles.container}>
       {region ? (
@@ -112,16 +125,16 @@ export default function Map() {
             rotateEnabled={false}
             // moveOnMarkerPress={false}
           >
-            {restaurants.map((restaurant, index) => (
+            {sortedRestaurants.map((restaurant, index) => (
               <Marker
                 key={index}
                 coordinate={{
                   latitude: restaurant.latitude || 0,
                   longitude: restaurant.longitude || 0,
                 }}
-                // title={restaurant.name}
-                // description={restaurant.address}
                 onPress={() => setSelectedRestaurant(restaurant)}
+                image={index < 5 ? require('../../assets/images/gold_marker2.png') : null}
+                style={{zIndex: index < 5 ? 1000 : index, elevation: index < 5 ? 1000 : index}}
               />
             ))}
           </MapView>

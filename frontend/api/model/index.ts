@@ -9,6 +9,7 @@ export * from './addPreferencesForUserParams';
 export * from './authenticationRequest';
 export * from './authenticationResponse';
 export * from './filterRestaurantsParams';
+export * from './filterRestaurantsWithScoresParams';
 export * from './getAllRestaurantsParams';
 export * from './getPreferencesByUserIdParams';
 export * from './getRestaurantsByTagParams';
