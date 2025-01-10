@@ -7,7 +7,10 @@ import {useAuth} from "@/security/AuthProvider";
 import Toast from "react-native-toast-message";
 import {useTheme} from "react-native-paper";
 
-let debounceTimeout: NodeJS.Timeout | null = null; // Declare a debounce timeout variable
+let debounceTimeout: NodeJS.Timeout | null = null;
+
+const ZOOM_THRESHOLD = 0.1;
+let toastTimeout: NodeJS.Timeout | null = null; // Timeout to debounce Toast notifications
 
 export default function Map() {
   const theme = useTheme();
@@ -85,16 +88,36 @@ export default function Map() {
   }) => {
     setRegion(region);
 
-    // Clear any existing debounce timeout
-    if (debounceTimeout) {
-      clearTimeout(debounceTimeout);
-    }
+    if (region.latitudeDelta < ZOOM_THRESHOLD) {
+      // Clear any existing debounce timeout
+      if (debounceTimeout) {
+        clearTimeout(debounceTimeout);
+      }
 
-    // Set a new debounce timeout for 500ms
-    debounceTimeout = setTimeout(() => {
-      const radius = computeRadius(region.latitudeDelta);
-      fetchRestaurants(region.latitude, region.longitude, radius);
-    }, 750);
+      // Fetch restaurants with debounce
+      debounceTimeout = setTimeout(() => {
+        const radius = computeRadius(region.latitudeDelta);
+        fetchRestaurants(region.latitude, region.longitude, radius);
+      }, 750);
+    } else {
+      console.log("Zoom out too far. Not fetching restaurants.");
+
+      // Show Toast message if zoom is not enough
+      if (!toastTimeout) {
+        Toast.show({
+          type: 'info',
+          text1: 'Zoom in required',
+          text2: 'Please zoom in to see restaurants in this area.',
+          position: 'top',
+          visibilityTime: 2000,
+        });
+
+        // Prevent spamming Toast messages
+        toastTimeout = setTimeout(() => {
+          toastTimeout = null;
+        }, 2000);
+      }
+    }
   };
 
   const sortedRestaurants = [...restaurants].sort((a, b) => {
