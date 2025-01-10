@@ -100,8 +100,6 @@ export default function Map() {
         fetchRestaurants(region.latitude, region.longitude, radius);
       }, 750);
     } else {
-      console.log("Zoom out too far. Not fetching restaurants.");
-
       // Show Toast message if zoom is not enough
       if (!toastTimeout) {
         Toast.show({
