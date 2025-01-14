@@ -10,10 +10,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/restaurants")
@@ -97,4 +94,21 @@ public class RestaurantController {
                 vegetarian, vegan, averageRating, totalReviewsCount, latitude, longitude, radius, pageable);
         return ResponseEntity.ok(filteredRestaurants);
     }
+
+    @PostMapping("/likeRestaurant")
+    public ResponseEntity<String> addLikeToRestaurant(
+            @RequestParam(name = "userId") Integer userId,
+            @RequestParam(name = "restaurantId") Long restaurantId
+    ) {
+        return ResponseEntity.ok(restaurantService.addLikeToRestaurant(userId, restaurantId));
+    }
+
+    @PostMapping("/dislikeRestaurant")
+    public ResponseEntity<String> removeLikeFromRestaurant(
+            @RequestParam(name = "userId") Integer userId,
+            @RequestParam(name = "restaurantId") Long restaurantId
+    ) {
+        return ResponseEntity.ok(restaurantService.removeLikeFromRestaurant(userId, restaurantId));
+    }
+
 }
