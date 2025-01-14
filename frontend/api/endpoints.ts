@@ -5,6 +5,7 @@
  * OpenAPI spec version: v0
  */
 import type {
+  AddLikeToRestaurantParams,
   AddPreferencesForUserParams,
   AuthenticationRequest,
   AuthenticationResponse,
@@ -18,7 +19,8 @@ import type {
   PageRestaurant,
   PreferenceDTO,
   Register200,
-  RegisterRequest
+  RegisterRequest,
+  RemoveLikeFromRestaurantParams
 } from './model'
 import { customInstance } from '../security/axiosConfig';
 
@@ -27,11 +29,31 @@ import { customInstance } from '../security/axiosConfig';
 type SecondParameter<T extends (...args: any) => any> = Parameters<T>[1];
 
 
-  export const increasePreferenceCount = (
+  export const addLikeToRestaurant = (
+    params: AddLikeToRestaurantParams,
+ options?: SecondParameter<typeof customInstance>,) => {
+      return customInstance<string>(
+      {url: `http://192.168.0.102:8080/api/v1/restaurants/likeRestaurant`, method: 'POST',
+        params
+    },
+      options);
+    }
+  
+export const removeLikeFromRestaurant = (
+    params: RemoveLikeFromRestaurantParams,
+ options?: SecondParameter<typeof customInstance>,) => {
+      return customInstance<string>(
+      {url: `http://192.168.0.102:8080/api/v1/restaurants/dislikeRestaurant`, method: 'POST',
+        params
+    },
+      options);
+    }
+  
+export const increasePreferenceCount = (
     params: IncreasePreferenceCountParams,
  options?: SecondParameter<typeof customInstance>,) => {
       return customInstance<string>(
-      {url: `http://192.168.0.104:8080/api/v1/preference/increasePreferenceCountForUser`, method: 'POST',
+      {url: `http://192.168.0.102:8080/api/v1/preference/increasePreferenceCountForUser`, method: 'POST',
         params
     },
       options);
@@ -42,7 +64,7 @@ export const addPreferencesForUser = (
     params: AddPreferencesForUserParams,
  options?: SecondParameter<typeof customInstance>,) => {
       return customInstance<string>(
-      {url: `http://192.168.0.104:8080/api/v1/preference/addPreferenceForUser`, method: 'POST',
+      {url: `http://192.168.0.102:8080/api/v1/preference/addPreferenceForUser`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: listOfPreferencesDTO,
         params
@@ -54,7 +76,7 @@ export const register = (
     registerRequest: RegisterRequest,
  options?: SecondParameter<typeof customInstance>,) => {
       return customInstance<Register200>(
-      {url: `http://192.168.0.104:8080/api/v1/auth/register`, method: 'POST',
+      {url: `http://192.168.0.102:8080/api/v1/auth/register`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: registerRequest
     },
@@ -65,7 +87,7 @@ export const authenticate = (
     authenticationRequest: AuthenticationRequest,
  options?: SecondParameter<typeof customInstance>,) => {
       return customInstance<AuthenticationResponse>(
-      {url: `http://192.168.0.104:8080/api/v1/auth/authenticate`, method: 'POST',
+      {url: `http://192.168.0.102:8080/api/v1/auth/authenticate`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: authenticationRequest
     },
@@ -76,7 +98,7 @@ export const getRestaurantsByTag = (
     params: GetRestaurantsByTagParams,
  options?: SecondParameter<typeof customInstance>,) => {
       return customInstance<PageRestaurant>(
-      {url: `http://192.168.0.104:8080/api/v1/restaurants/getByTag`, method: 'GET',
+      {url: `http://192.168.0.102:8080/api/v1/restaurants/getByTag`, method: 'GET',
         params
     },
       options);
@@ -86,7 +108,7 @@ export const getAllRestaurants = (
     params?: GetAllRestaurantsParams,
  options?: SecondParameter<typeof customInstance>,) => {
       return customInstance<PageRestaurant>(
-      {url: `http://192.168.0.104:8080/api/v1/restaurants/getAll`, method: 'GET',
+      {url: `http://192.168.0.102:8080/api/v1/restaurants/getAll`, method: 'GET',
         params
     },
       options);
@@ -96,7 +118,7 @@ export const filterRestaurants = (
     params?: FilterRestaurantsParams,
  options?: SecondParameter<typeof customInstance>,) => {
       return customInstance<PageRestaurant>(
-      {url: `http://192.168.0.104:8080/api/v1/restaurants/filter`, method: 'GET',
+      {url: `http://192.168.0.102:8080/api/v1/restaurants/filter`, method: 'GET',
         params
     },
       options);
@@ -106,7 +128,7 @@ export const filterRestaurantsWithScores = (
     params?: FilterRestaurantsWithScoresParams,
  options?: SecondParameter<typeof customInstance>,) => {
       return customInstance<PageRestaurant>(
-      {url: `http://192.168.0.104:8080/api/v1/restaurants/filterWithScores`, method: 'GET',
+      {url: `http://192.168.0.102:8080/api/v1/restaurants/filterWithScores`, method: 'GET',
         params
     },
       options);
@@ -116,7 +138,7 @@ export const getPreferencesByUserId = (
     params: GetPreferencesByUserIdParams,
  options?: SecondParameter<typeof customInstance>,) => {
       return customInstance<PreferenceDTO[]>(
-      {url: `http://192.168.0.104:8080/api/v1/preference/getPreferencesByUserId`, method: 'GET',
+      {url: `http://192.168.0.102:8080/api/v1/preference/getPreferencesByUserId`, method: 'GET',
         params
     },
       options);
@@ -126,11 +148,13 @@ export const getAllPreferences = (
     
  options?: SecondParameter<typeof customInstance>,) => {
       return customInstance<string[]>(
-      {url: `http://192.168.0.104:8080/api/v1/preference/getAllPreferences`, method: 'GET'
+      {url: `http://192.168.0.102:8080/api/v1/preference/getAllPreferences`, method: 'GET'
     },
       options);
     }
   
+export type AddLikeToRestaurantResult = NonNullable<Awaited<ReturnType<typeof addLikeToRestaurant>>>
+export type RemoveLikeFromRestaurantResult = NonNullable<Awaited<ReturnType<typeof removeLikeFromRestaurant>>>
 export type IncreasePreferenceCountResult = NonNullable<Awaited<ReturnType<typeof increasePreferenceCount>>>
 export type AddPreferencesForUserResult = NonNullable<Awaited<ReturnType<typeof addPreferencesForUser>>>
 export type RegisterResult = NonNullable<Awaited<ReturnType<typeof register>>>
