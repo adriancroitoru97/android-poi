@@ -71,7 +71,7 @@ export default function Map() {
     const size = Math.min(1000, Math.max(50, Math.floor((radius / 1000) * 10)));
 
     try {
-      const rs = await filterRestaurantsWithScores({latitude, longitude, radius, size});
+      const rs = await filterRestaurantsWithScores({latitude, longitude, radius, size: 1000});
       rs.content && setRestaurants(rs.content);
     } catch (error) {
       console.error('Error fetching restaurants:', error);
@@ -96,7 +96,7 @@ export default function Map() {
 
       // Fetch restaurants with debounce
       debounceTimeout = setTimeout(() => {
-        const radius = computeRadius(region.latitudeDelta);
+        const radius = computeRadius(region.latitudeDelta) * 0.8;
         fetchRestaurants(region.latitude, region.longitude, radius);
       }, 750);
     } else {
