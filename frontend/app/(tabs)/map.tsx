@@ -1,11 +1,12 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {ActivityIndicator, Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import MapView, {Marker} from 'react-native-maps';
-import {filterRestaurantsWithScores, increasePreferenceCount, Restaurant} from '@/api';
+import {addLikeToRestaurant, filterRestaurantsWithScores, removeLikeFromRestaurant, Restaurant} from '@/api';
 import * as Location from 'expo-location';
 import {useAuth} from "@/security/AuthProvider";
 import Toast from "react-native-toast-message";
-import {useTheme} from "react-native-paper";
+import {Divider, useTheme} from "react-native-paper";
+import {Heart} from "lucide-react-native";
 
 let debounceTimeout: NodeJS.Timeout | null = null;
 
@@ -21,6 +22,9 @@ export default function Map() {
 
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [selectedRestaurant, setSelectedRestaurant] = useState<Restaurant | null>(null);
+  const [likedRestaurantIds, setLikedRestaurantIds] = useState<number[]>(
+    (auth.user?.likedRestaurants || []).map(r => r.id || -1)
+  );
   const [region, setRegion] = useState<{
     latitude: number;
     longitude: number;
@@ -130,6 +134,53 @@ export default function Map() {
     return a.name?.localeCompare(b.name || "") || 0;
   });
 
+  const handleLikePress = async (restaurant: Restaurant) => {
+    const restaurantId = restaurant.id || -1;
+    const isLiked = likedRestaurantIds.includes(restaurantId);
+
+    try {
+      if (isLiked) {
+        await removeLikeFromRestaurant({
+          userId: auth.user?.id || 0,
+          restaurantId: restaurantId,
+        });
+
+        setLikedRestaurantIds(prev => prev.filter(id => id !== restaurantId));
+        setRestaurants(prev => prev.map(r =>
+          r.id === restaurantId
+            ? { ...r, usersLikes: (r.usersLikes ?? 0) - 1 }
+            : r
+        ));
+
+        Toast.show({
+          type: 'success',
+          text1: 'Restaurant unmarked as liked!'
+        });
+      } else {
+        await addLikeToRestaurant({
+          userId: auth.user?.id || 0,
+          restaurantId: restaurantId
+        });
+
+        setLikedRestaurantIds(prev => [...prev, restaurantId]);
+        setRestaurants(prev => prev.map(r =>
+          r.id === restaurantId
+            ? { ...r, usersLikes: (r.usersLikes ?? 0) + 1 }
+            : r
+        ));
+
+        Toast.show({
+          type: 'success',
+          text1: 'Restaurant marked as liked!'
+        });
+      }
+    } catch (error) {
+      Toast.show({
+        type: 'error',
+        text1: 'Failed to like/unlike the restaurant'
+      });
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -227,17 +278,15 @@ export default function Map() {
               </Text>
             )}
           </ScrollView>
-
-          <TouchableOpacity style={styles.visitButton} onPress={() => {
-            increasePreferenceCount({
-              userId: auth.user?.id || 0,
-              restaurantId: selectedRestaurant?.id || -1
-            }).then(() => {
-              Toast.show({type: 'success', text1: 'Restaurant marked as liked!'});
-              setSelectedRestaurant(null);
-            })
-          }}>
-            <Text style={styles.visitButtonText}>Like</Text>
+          <Divider style={{marginVertical: 10}}/>
+          <TouchableOpacity style={styles.heartButton} onPress={() => handleLikePress(selectedRestaurant)}>
+            <Heart
+              size={24}
+              color="#E57373"
+              fill={likedRestaurantIds.includes(selectedRestaurant.id || -1) ? "#E57373" : "none"}
+              strokeWidth={2}
+            />
+            <Text>{restaurants.find((r) => r.id === selectedRestaurant.id)?.usersLikes}</Text>
           </TouchableOpacity>
         </View>
       )}
@@ -327,9 +376,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     alignSelf: 'flex-start',
   },
-  visitButtonText: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: 'bold',
+  heartButton: {
+    display: "flex",
+    flexDirection: "row",
+    gap: 6,
+    marginTop: 12,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: "center",
+    alignSelf: 'flex-start',
+    backgroundColor: 'transparent',
   },
 });
