@@ -236,6 +236,8 @@ export default function Map() {
         text1: 'Failed to like/unlike the restaurant'
       });
     }
+
+    auth.refreshUser();
   };
 
   return (

@@ -14,13 +14,15 @@ import type {
   GetAllRestaurantsParams,
   GetPreferencesByUserIdParams,
   GetRestaurantsByTagParams,
+  GetUserParams,
   IncreasePreferenceCountParams,
   ListOfPreferencesDTO,
   PageRestaurant,
   PreferenceDTO,
   Register200,
   RegisterRequest,
-  RemoveLikeFromRestaurantParams
+  RemoveLikeFromRestaurantParams,
+  User
 } from './model'
 import { customInstance } from '../security/axiosConfig';
 
@@ -94,6 +96,16 @@ export const authenticate = (
       options);
     }
   
+export const getUser = (
+    params: GetUserParams,
+ options?: SecondParameter<typeof customInstance>,) => {
+      return customInstance<User>(
+      {url: `http://192.168.0.102:8080/api/v1/users/get`, method: 'GET',
+        params
+    },
+      options);
+    }
+  
 export const getRestaurantsByTag = (
     params: GetRestaurantsByTagParams,
  options?: SecondParameter<typeof customInstance>,) => {
@@ -159,6 +171,7 @@ export type IncreasePreferenceCountResult = NonNullable<Awaited<ReturnType<typeo
 export type AddPreferencesForUserResult = NonNullable<Awaited<ReturnType<typeof addPreferencesForUser>>>
 export type RegisterResult = NonNullable<Awaited<ReturnType<typeof register>>>
 export type AuthenticateResult = NonNullable<Awaited<ReturnType<typeof authenticate>>>
+export type GetUserResult = NonNullable<Awaited<ReturnType<typeof getUser>>>
 export type GetRestaurantsByTagResult = NonNullable<Awaited<ReturnType<typeof getRestaurantsByTag>>>
 export type GetAllRestaurantsResult = NonNullable<Awaited<ReturnType<typeof getAllRestaurants>>>
 export type FilterRestaurantsResult = NonNullable<Awaited<ReturnType<typeof filterRestaurants>>>

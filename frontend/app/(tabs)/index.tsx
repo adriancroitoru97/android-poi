@@ -13,7 +13,7 @@ export default function Index() {
 
   const onRefresh = React.useCallback(async () => {
     setRefreshing(true);
-    // await auth.refreshUser();
+    auth.refreshUser();
     setRefreshing(false);
   }, []);
 

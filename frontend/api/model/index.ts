@@ -14,6 +14,7 @@ export * from './filterRestaurantsWithScoresParams';
 export * from './getAllRestaurantsParams';
 export * from './getPreferencesByUserIdParams';
 export * from './getRestaurantsByTagParams';
+export * from './getUserParams';
 export * from './grantedAuthority';
 export * from './increasePreferenceCountParams';
 export * from './listOfPreferencesDTO';
