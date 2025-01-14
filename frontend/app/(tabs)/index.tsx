@@ -1,123 +1,181 @@
 import React from "react";
-import {StyleSheet, Text, View} from "react-native";
+import {RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View} from "react-native";
 import {useRouter} from "expo-router";
 import {useAuth} from "@/security/AuthProvider";
-import {User} from "@/api";
-import {Button} from "react-native-paper";
+import {Restaurant} from "@/api";
+import {Card, Divider} from "react-native-paper";
+import {Heart} from "lucide-react-native";
 
 export default function Index() {
   const router = useRouter();
   const auth = useAuth();
+  const [refreshing, setRefreshing] = React.useState(false);
 
-  const handleLogout = () => {
-    auth.logout();
-    router.replace("/login");
+  const onRefresh = React.useCallback(async () => {
+    setRefreshing(true);
+    // await auth.refreshUser();
+    setRefreshing(false);
+  }, []);
+
+  const likedRestaurants = auth.user?.likedRestaurants || [];
+
+  const handleRestaurantPress = (restaurant: Restaurant) => {
+    router.push({
+      pathname: "/map",
+      params: {
+        lat: restaurant.latitude,
+        lng: restaurant.longitude,
+        id: restaurant.id
+      }
+    });
   };
 
   return (
     <View style={styles.container}>
-      <View style={styles.loggedInHomeContainer}>
-        <UserView user={auth.user || {}} onLogout={handleLogout}/>
-        {/* Buttons */}
-        <View style={userViewStyles.buttonsContainer}>
-          <Button
-            mode="outlined"
-            style={styles.logoutButton}
-            onPress={() => auth.logout()}
-          >
-            Logout
-          </Button>
-        </View>
+      {/* Sticky Header */}
+      <View style={styles.header}>
+        <Text style={styles.headerText}>
+          Your liked restaurants
+        </Text>
       </View>
+
+      {/* Scrollable Content */}
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh}/>
+        }
+      >
+        {likedRestaurants.length === 0 ? (
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyStateText}>
+              You haven't liked any restaurants yet.
+            </Text>
+            <TouchableOpacity
+              style={styles.exploreButton}
+              onPress={() => router.push("/map")}
+            >
+              <Text style={styles.exploreButtonText}>Explore Restaurants</Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          likedRestaurants.map((restaurant, index) => (
+            <React.Fragment key={restaurant.id}>
+              <TouchableOpacity
+                onPress={() => handleRestaurantPress(restaurant)}
+              >
+                <Card style={styles.restaurantCard}>
+                  <Card.Content>
+                    <View style={styles.restaurantHeader}>
+                      <Text style={styles.restaurantName}>
+                        {restaurant.name}
+                      </Text>
+                      <Heart
+                        size={20}
+                        color="#E57373"
+                        fill="#E57373"
+                        strokeWidth={2}
+                      />
+                    </View>
+
+                    <Text style={styles.restaurantInfo}>
+                      {restaurant.address}
+                    </Text>
+                    {restaurant.averageRating !== undefined && (
+                      <Text style={styles.restaurantInfo}>
+                        Rating: {restaurant.averageRating.toFixed(1)} ⭐️
+                      </Text>
+                    )}
+                    {restaurant.tags && restaurant.tags.length > 0 && (
+                      <Text style={styles.tags}>
+                        {restaurant.tags.map(tag => tag.name).join(', ')}
+                      </Text>
+                    )}
+                  </Card.Content>
+                </Card>
+              </TouchableOpacity>
+              {index < likedRestaurants.length - 1 && <Divider style={styles.divider}/>}
+            </React.Fragment>
+          ))
+        )}
+      </ScrollView>
     </View>
   );
 }
 
-const UserView = ({
-                    user,
-                    onLogout,
-                  }: {
-  user: User;
-  onLogout: () => void;
-}) => {
-  const fullName = `${user.firstName || ""} ${user.lastName || ""}`.trim();
-  const currentHour = new Date().getHours();
-  const greeting =
-    currentHour < 12
-      ? "Good Morning"
-      : currentHour < 18
-        ? "Good Afternoon"
-        : "Good Evening";
-
-  return (
-    <View style={userViewStyles.container}>
-      {/* Greeting */}
-      <Text style={userViewStyles.greeting}>
-        {greeting}, {user.firstName || user.username || "Guest"}!
-      </Text>
-
-      {/* User Information */}
-      <View style={userViewStyles.infoContainer}>
-        {user.email && <Text style={userViewStyles.info}>Email: {user.email}</Text>}
-        {fullName && <Text style={userViewStyles.info}>Name: {fullName}</Text>}
-        {user.role && <Text style={userViewStyles.info}>Role: {user.role}</Text>}
-        {user.enabled !== undefined && (
-          <Text style={userViewStyles.info}>
-            Account Status: {user.enabled ? "Enabled" : "Disabled"}
-          </Text>
-        )}
-      </View>
-    </View>
-  );
-};
-
-const userViewStyles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 32,
-    alignItems: "center",
-    backgroundColor: "#f5f5f5",
-    paddingTop: 64,
-  },
-  greeting: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#298a47",
-    marginBottom: 16,
-    textAlign: "center",
-  },
-  infoContainer: {
-    marginTop: 8,
-    width: "100%",
-  },
-  info: {
-    fontSize: 16,
-    color: "#333",
-    marginBottom: 4,
-    textAlign: "left",
-  },
-  buttonsContainer: {
-    marginTop: 24,
-    width: "100%",
-    flexDirection: "row",
-    justifyContent: "space-around",
-  },
-});
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: "center",
-    justifyContent: "space-between",
     backgroundColor: "#ffffff",
   },
-  loggedInHomeContainer: {
+  header: {
+    padding: 16,
+    paddingTop: 60,
+    backgroundColor: "#ffffff",
+    borderBottomWidth: 1,
+    borderBottomColor: "#eee",
+  },
+  headerText: {
+    fontSize: 24,
+    fontWeight: "600",
+    color: "#000",
+  },
+  scrollView: {
     flex: 1,
+  },
+  scrollContent: {
+    padding: 16,
+  },
+  restaurantCard: {
+    marginBottom: 8,
+    elevation: 2,
+  },
+  restaurantHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  restaurantName: {
+    fontSize: 18,
+    fontWeight: "bold",
+    flex: 1,
+    marginRight: 8,
+  },
+  restaurantInfo: {
+    fontSize: 14,
+    color: "#666",
+    marginBottom: 4,
+  },
+  tags: {
+    fontSize: 12,
+    color: "#888",
+    marginTop: 4,
+  },
+  divider: {
+    marginVertical: 8,
+  },
+  emptyState: {
+    padding: 32,
+    alignItems: "center",
     justifyContent: "center",
   },
-  logoutButton: {
-    marginVertical: 8,
-    marginBottom: 24,
-    width: "80%",
+  emptyStateText: {
+    fontSize: 16,
+    color: "#666",
+    textAlign: "center",
+    marginBottom: 16,
+  },
+  exploreButton: {
+    backgroundColor: "#298a47",
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+  },
+  exploreButtonText: {
+    color: "#ffffff",
+    fontSize: 16,
+    fontWeight: "600",
   },
 });

@@ -7,6 +7,7 @@ import {useAuth} from "@/security/AuthProvider";
 import Toast from "react-native-toast-message";
 import {Divider, useTheme} from "react-native-paper";
 import {Heart} from "lucide-react-native";
+import {useLocalSearchParams} from "expo-router";
 
 let debounceTimeout: NodeJS.Timeout | null = null;
 
@@ -15,6 +16,13 @@ let toastTimeout: NodeJS.Timeout | null = null; // Timeout to debounce Toast not
 
 export default function Map() {
   const theme = useTheme();
+  const {lat, lng, id} = useLocalSearchParams(); // Get parameters from the URL
+  const previousParams = useRef<{ lat: string | null, lng: string | null, id: string | null }>({
+    lat: null,
+    lng: null,
+    id: null
+  });
+  const firstToSecond = useRef<boolean>(false);
 
   const mapRef = useRef<MapView>(null);
 
@@ -32,6 +40,54 @@ export default function Map() {
     longitudeDelta: number;
   } | null>(null);
   const [loading, setLoading] = useState(false); // Track loading state
+
+  // Handle changes in lat, lng, or id
+  useEffect(() => {
+    const currentLat = parseFloat(lat as string);
+    const currentLng = parseFloat(lng as string);
+    const currentId = parseInt(id as string, 10);
+
+    const prevLat = parseFloat(previousParams.current.lat || "");
+    const prevLng = parseFloat(previousParams.current.lng || "");
+    const prevId = parseInt(previousParams.current.id || "");
+
+    // Check if lat/lng/id have changed
+    const paramsChanged =
+      currentLat !== prevLat ||
+      currentLng !== prevLng ||
+      currentId !== prevId;
+
+    if (paramsChanged && lat && lng) {
+      setSelectedRestaurant(null);
+      // Center the map
+      const targetRegion = {
+        latitude: currentLat,
+        longitude: currentLng,
+        latitudeDelta: 0.01,
+        longitudeDelta: 0.01,
+      };
+      setRegion(targetRegion);
+      mapRef.current?.animateToRegion(targetRegion, 1000);
+
+      // Update previous parameters
+      previousParams.current = {lat: lat as string, lng: lng as string, id: id as string};
+
+      firstToSecond.current = true;
+    }
+  }, [lat, lng, id]);
+
+  useEffect(() => {
+    // Wait for loading to be false before selecting the restaurant
+    if (firstToSecond.current && !loading && id && restaurants.length > 0) {
+      firstToSecond.current = false;
+      const targetRestaurant = restaurants.find(
+        restaurant => restaurant.id === parseInt(id as string, 10)
+      );
+      if (targetRestaurant) {
+        setSelectedRestaurant(targetRestaurant);
+      }
+    }
+  }, [loading, restaurants]);
 
   useEffect(() => {
     const fetchUserLocation = async () => {
@@ -148,7 +204,7 @@ export default function Map() {
         setLikedRestaurantIds(prev => prev.filter(id => id !== restaurantId));
         setRestaurants(prev => prev.map(r =>
           r.id === restaurantId
-            ? { ...r, usersLikes: (r.usersLikes ?? 0) - 1 }
+            ? {...r, usersLikes: (r.usersLikes ?? 0) - 1}
             : r
         ));
 
@@ -165,7 +221,7 @@ export default function Map() {
         setLikedRestaurantIds(prev => [...prev, restaurantId]);
         setRestaurants(prev => prev.map(r =>
           r.id === restaurantId
-            ? { ...r, usersLikes: (r.usersLikes ?? 0) + 1 }
+            ? {...r, usersLikes: (r.usersLikes ?? 0) + 1}
             : r
         ));
 
