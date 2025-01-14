@@ -22,6 +22,7 @@ export interface Restaurant {
   restaurantLink?: string;
   tags?: Tag[];
   totalReviewsCount?: number;
+  usersLikes?: number;
   vegan?: boolean;
   vegetarian?: boolean;
 }

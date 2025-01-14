@@ -7,7 +7,7 @@ module.exports = {
       workspace: './api',
       target: './endpoints.ts',
       schemas: './model',
-      baseUrl: 'http://192.168.0.104:8080',
+      baseUrl: 'http://192.168.0.102:8080',
       override: {
         mutator: {
           path: '../security/axiosConfig.ts',

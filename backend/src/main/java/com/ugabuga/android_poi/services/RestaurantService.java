@@ -1,7 +1,9 @@
 package com.ugabuga.android_poi.services;
 
 import com.ugabuga.android_poi.models.*;
+import com.ugabuga.android_poi.repositories.IUserRepository;
 import com.ugabuga.android_poi.repositories.RestaurantRepository;
+import com.ugabuga.android_poi.services.impl.PreferencesService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -20,6 +22,12 @@ public class RestaurantService {
 
     @Autowired
     private final RestaurantRepository restaurantRepository;
+
+    @Autowired
+    private IUserRepository userRepository;
+
+    @Autowired
+    private PreferencesService preferencesService;
 
     public Page<Restaurant> getAllRestaurants(Pageable pageable) {
         return restaurantRepository.findAll(pageable);
@@ -79,5 +87,51 @@ public class RestaurantService {
                 .collect(Collectors.toList());
 
         return new PageImpl<>(scoredRestaurants, pageable, restaurants.getTotalElements());
+    }
+
+    public String addLikeToRestaurant(Integer userId, Long restaurantId) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("Utilizatorul cu id-ul " + userId + " nu a fost gasit!"));
+        Restaurant restaurant = restaurantRepository.findById(restaurantId).orElseThrow(() -> new RuntimeException("Restaurantul cu id-ul " + restaurantId + " nu a fost gasit!"));
+
+        List<Restaurant> userLikedRestaurants = user.getLikedRestaurants();
+
+        for (Restaurant r : userLikedRestaurants) {
+            if (r.getId().equals(restaurant.getId())) {
+                return "Ai mai dat o data like acestui restaurant!";
+            }
+        }
+
+        restaurant.setUsersLikes(restaurant.getUsersLikes() + 1);
+        user.getLikedRestaurants().add(restaurant);
+
+        restaurantRepository.saveAndFlush(restaurant);
+        userRepository.saveAndFlush(user);
+
+        preferencesService.increasePreferenceCountForUser(userId, restaurantId);
+
+        return "Restaurantul cu id-ul " + restaurantId + " va multumeste!";
+
+    }
+
+    public String removeLikeFromRestaurant(Integer userId, Long restaurantId) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("Utilizatorul cu id-ul " + userId + " nu a fost gasit!"));
+        Restaurant restaurant = restaurantRepository.findById(restaurantId).orElseThrow(() -> new RuntimeException("Restaurantul cu id-ul " + restaurantId + " nu a fost gasit!"));
+
+        List<Restaurant> userLikedRestaurants = user.getLikedRestaurants();
+
+        for (Restaurant r : userLikedRestaurants) {
+            if (r.getId().equals(restaurant.getId())) {
+                userLikedRestaurants.remove(r);
+                restaurant.setUsersLikes(restaurant.getUsersLikes() - 1);
+
+                userRepository.saveAndFlush(user);
+                restaurantRepository.saveAndFlush(restaurant);
+
+                return "Ne pare rau sa auzim ca restaurantul  " + restaurant.getName() + " nu v-a multumit :(";
+            }
+        }
+
+        return "Trebuie sa dati mai intai like pentru a putea da dislike!";
+
     }
 }

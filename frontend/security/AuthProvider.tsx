@@ -1,5 +1,5 @@
 import React, {createContext, FC, ReactNode, useContext, useEffect, useState,} from "react";
-import {authenticate, AuthenticationRequest, User} from "@/api";
+import {authenticate, AuthenticationRequest, getUser, User} from "@/api";
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {useRouter} from "expo-router";
@@ -11,6 +11,7 @@ interface AuthContextType {
   login: (data: AuthenticationRequest) => Promise<boolean>;
   logout: () => void;
   loggedIn: boolean;
+  refreshUser: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -73,9 +74,17 @@ export const AuthProvider: FC<{ children: ReactNode }> = ({children}) => {
     router.navigate("/");
   };
 
+  const refreshUser = async () => {
+    const response = await getUser({id: user?.id ?? 0});
+    if (response) {
+      setUser(response);
+      await AsyncStorage.setItem(AUTH_USER_KEY, JSON.stringify(response));
+    }
+  }
+
   return (
     <AuthContext.Provider
-      value={{token, user, login, logout, loggedIn}}
+      value={{token, user, login, logout, loggedIn, refreshUser}}
     >
       {children}
     </AuthContext.Provider>

@@ -65,6 +65,9 @@ public class Restaurant {
     @Column(name = "average_rating")
     private Double averageRating;
 
+    @Column(name = "users_likes", columnDefinition = "BIGINT default 0")
+    private Long usersLikes;
+
     @Column(name = "total_reviews_count")
     private Integer totalReviewsCount;
 

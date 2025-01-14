@@ -24,7 +24,7 @@ public class RestaurantRepositoryCustomImpl implements RestaurantRepositoryCusto
         StringBuilder sql = new StringBuilder(
                 "SELECT r.id, r.restaurant_link, r.name, r.country, r.region, r.province, r.city, " +
                         "r.address, r.latitude, r.longitude, r.vegetarian, r.vegan, r.open_hours, " +
-                        "r.average_rating, r.total_reviews_count, " +
+                        "r.average_rating, r.total_reviews_count, r.users_likes, " +
                         "ST_DistanceSphere(ST_MakePoint(r.longitude, r.latitude), ST_MakePoint(:longitude, :latitude)) AS distance " +
                         "FROM restaurant r "
         );

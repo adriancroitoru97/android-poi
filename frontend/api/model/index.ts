@@ -5,6 +5,7 @@
  * OpenAPI spec version: v0
  */
 
+export * from './addLikeToRestaurantParams';
 export * from './addPreferencesForUserParams';
 export * from './authenticationRequest';
 export * from './authenticationResponse';
@@ -13,6 +14,7 @@ export * from './filterRestaurantsWithScoresParams';
 export * from './getAllRestaurantsParams';
 export * from './getPreferencesByUserIdParams';
 export * from './getRestaurantsByTagParams';
+export * from './getUserParams';
 export * from './grantedAuthority';
 export * from './increasePreferenceCountParams';
 export * from './listOfPreferencesDTO';
@@ -24,6 +26,7 @@ export * from './preferenceDTOPreferenceType';
 export * from './preferencePreferenceType';
 export * from './register200';
 export * from './registerRequest';
+export * from './removeLikeFromRestaurantParams';
 export * from './restaurant';
 export * from './sortObject';
 export * from './tag';
