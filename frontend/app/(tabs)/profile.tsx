@@ -1,9 +1,10 @@
-import React, {useEffect, useState} from "react";
-import {ScrollView, StyleSheet, View} from "react-native";
-import {Avatar, Button, Chip, Divider, Text} from "react-native-paper";
-import {useAuth} from "@/security/AuthProvider";
-import {addPreferencesForUser, getAllPreferences, getPreferencesByUserId} from "@/api";
+import React, { useEffect, useState } from "react";
+import { ScrollView, StyleSheet, View, TouchableOpacity } from "react-native";
+import { Avatar, Button, Chip, Divider, Text } from "react-native-paper";
+import { useAuth } from "@/security/AuthProvider";
+import { addPreferencesForUser, getAllPreferences, getPreferencesByUserId } from "@/api";
 import Toast from "react-native-toast-message";
+import Collapsible from "react-native-collapsible";
 
 // Helper function to get initials
 const getInitials = (firstName?: string, lastName?: string) => {
@@ -24,17 +25,19 @@ export default function Profile() {
   const auth = useAuth();
 
   // States for preferences
-  const [preferences, setPreferences] = useState<string[]>([]);
+  const [preferences, setPreferences] = useState<{ [key: string]: string[] }>({});
   const [selectedPreferences, setSelectedPreferences] = useState<string[]>([]);
+  const [collapsedSections, setCollapsedSections] = useState<{ [key: string]: boolean }>({});
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const fetchPreferences = async () => {
       try {
         const allPreferences = await getAllPreferences();
-        setPreferences(allPreferences);
+        const groupedPreferences = groupPreferences(allPreferences);
+        setPreferences(groupedPreferences);
 
-        const userPreferences = await getPreferencesByUserId({userId: auth.user?.id ?? 0});
+        const userPreferences = await getPreferencesByUserId({ userId: auth.user?.id ?? 0 });
         setSelectedPreferences(userPreferences.map((pref) => pref.preferenceType ?? ""));
       } catch (error) {
         console.error("Error fetching preferences:", error);
@@ -44,6 +47,63 @@ export default function Profile() {
     fetchPreferences();
   }, [auth.user?.id]);
 
+  const groupPreferences = (allPreferences: string[]): { [key: string]: string[] } => {
+    const categories = {
+      Asia: [
+        "Afghani", "Chinese", "Japanese", "Korean", "Thai", "Indian", "Vietnamese",
+        "Malaysian", "Singaporean", "Nepalese", "Mongolian", "Tibetan", "Filipino",
+        "Pakistani", "Bangladeshi", "SriLankan", "Indonesian", "Uzbek",
+        "CentralAsian", "Kazakh", "Kyrgyz",
+      ],
+      Europe: [
+        "Italian", "French", "Spanish", "German", "Greek", "Portuguese", "Dutch",
+        "Russian", "Polish", "Ukrainian", "Norwegian", "Swedish", "Danish",
+        "British", "Scottish", "Irish", "Austrian", "Swiss", "Czech", "Hungarian",
+        "Croatian", "Bosnian", "Albanian", "Serbian", "Bulgarian", "Slovenian",
+        "Slovakian", "Romanian", "Georgian", "Armenian", "Basque",
+      ],
+      America: [
+        "American", "Canadian", "Mexican", "Brazilian", "Argentinian",
+        "Cuban", "Colombian", "Peruvian", "Jamaican", "Chilean",
+        "PuertoRican", "Venezuelan", "Salvadoran", "CostaRican",
+        "Guatemalan", "Honduran", "Caribbean", "CentralAmerican",
+        "SouthAmerican",
+      ],
+      MiddleEast: [
+        "Arabic", "Lebanese", "Persian", "Israeli", "Turkish",
+        "Egyptian", "Moroccan", "Algerian", "Tunisian", "Syrian", "Jordanian",
+        "Iraqi", "Kuwaiti", "Saudi", "Yemeni", "Omani",
+      ],
+      Africa: [
+        "Ethiopian", "Nigerian", "SouthAfrican", "Ghanaian", "Kenyan",
+        "Tanzanian", "Ugandan", "Senegalese", "Congolese", "Rwandan",
+        "Zimbabwean", "Malian", "Burkinabe",
+      ],
+      Oceania: [
+        "Australian", "NewZealand", "Polynesian", "Hawaiian",
+      ],
+      Vegetarian: [
+        "VeganOptions", "VegetarianFriendly", "GlutenFreeOptions", "Halal",
+        "Kosher", "MedicinalFoods", "Healthy",
+      ],
+      Desserts: [
+        "Bakeries", "Dessert", "FruitParlours", "JapaneseSweetsParlour",
+      ],
+      Beverages: [ "Cafe", "WineBar", "BrewPub", "BeerRestaurants",
+      ],
+      Others: [
+        "Fusion", "StreetFood", "FastFood", "FineDining", "QuickBites",
+        "Deli", "Seafood", "Pizza", "Barbecue", "Grill", "Pub",
+        "Sushi", "Steakhouse", "Soups", "Contemporary", "International",
+      ],
+    };
+
+    return Object.entries(categories).reduce((acc, [category, tags]) => {
+      acc[category] = allPreferences.filter((pref) => tags.includes(pref));
+      return acc;
+    }, {} as { [key: string]: string[] });
+  };
+
   const togglePreference = (preference: string) => {
     if (selectedPreferences.includes(preference)) {
       setSelectedPreferences(selectedPreferences.filter((item) => item !== preference));
@@ -52,22 +112,29 @@ export default function Profile() {
     }
   };
 
+  const toggleSection = (category: string) => {
+    setCollapsedSections((prev) => ({
+      ...prev,
+      [category]: !prev[category],
+    }));
+  };
+
   const handleSavePreferences = async () => {
     setLoading(true);
     try {
       await addPreferencesForUser(
-        {listOfPreferences: selectedPreferences},
-        {userId: auth.user?.id ?? 0}
+        { listOfPreferences: selectedPreferences },
+        { userId: auth.user?.id ?? 0 }
       );
       Toast.show({
-        type: 'success',
-        text1: 'Preferences updated!',
+        type: "success",
+        text1: "Preferences updated!",
       });
     } catch (error) {
       Toast.show({
-        type: 'error',
-        text1: 'Something went wrong',
-        text2: 'Try again!',
+        type: "error",
+        text1: "Something went wrong",
+        text2: "Try again!",
       });
     } finally {
       setLoading(false);
@@ -88,50 +155,51 @@ export default function Profile() {
         </Text>
         <Text style={styles.email}>{auth.user?.email}</Text>
 
-        <Button
-          mode="outlined"
-          style={styles.logoutButton}
-          onPress={() => auth.logout()}
-        >
+        <Button mode="outlined" style={styles.logoutButton} onPress={() => auth.logout()}>
           Logout
         </Button>
-        <Divider style={styles.divider}/>
+        <Divider style={styles.divider} />
       </View>
-
 
       {/* Preferences Section */}
-      <View style={styles.preferencesSection}>
-        {/* Fixed Header */}
-        <Text variant="headlineMedium" style={styles.preferencesTitle}>
-          Update Your Preferences
-        </Text>
-
-        {/* Scrollable Preferences */}
-        <ScrollView contentContainerStyle={styles.chipContainer}>
-          {preferences.map((preference) => (
-            <Chip
-              key={preference}
-              style={styles.chip}
-              onPress={() => togglePreference(preference)}
-              selected={selectedPreferences.includes(preference)}
-              selectedColor={"#298a47"}
+      <ScrollView contentContainerStyle={styles.preferencesSection}>
+        {Object.entries(preferences).map(([category, tags]) => (
+          <View key={category} style={styles.categoryContainer}>
+            <TouchableOpacity
+              onPress={() => toggleSection(category)}
+              style={styles.categoryButton}
             >
-              {preference}
-            </Chip>
-          ))}
-        </ScrollView>
+              <Text style={styles.categoryButtonText}>{category}</Text>
+            </TouchableOpacity>
+            <Collapsible collapsed={collapsedSections[category] ?? true}>
+              <View style={styles.chipContainer}>
+                {tags.map((tag) => (
+                  <Chip
+                    key={tag}
+                    style={styles.chip}
+                    onPress={() => togglePreference(tag)}
+                    selected={selectedPreferences.includes(tag)}
+                    selectedColor={"#298a47"}
+                  >
+                    {tag}
+                  </Chip>
+                ))}
+              </View>
+            </Collapsible>
+          </View>
+        ))}
+      </ScrollView>
 
-        {/* Fixed Footer */}
-        <Button
-          mode="contained"
-          onPress={handleSavePreferences}
-          loading={loading}
-          disabled={loading}
-          style={styles.saveButton}
-        >
-          Save Preferences
-        </Button>
-      </View>
+      {/* Fixed Footer */}
+      <Button
+        mode="contained"
+        onPress={handleSavePreferences}
+        loading={loading}
+        disabled={loading}
+        style={styles.saveButton}
+      >
+        Save Preferences
+      </Button>
     </View>
   );
 }
@@ -142,7 +210,6 @@ const styles = StyleSheet.create({
     padding: 16,
     paddingTop: 64,
     backgroundColor: "#fff",
-    justifyContent: "space-between",
   },
   profileSection: {
     alignItems: "center",
@@ -172,22 +239,37 @@ const styles = StyleSheet.create({
     marginVertical: 32,
   },
   preferencesSection: {
-    maxHeight: "57%",
-    width: "100%",
+    flexGrow: 1,
     paddingBottom: 48,
   },
-  preferencesTitle: {
-    fontWeight: "bold",
-    fontSize: 18,
+  categoryContainer: {
     marginBottom: 16,
-    textAlign: "center",
+    width: "100%",
+    alignItems: "center",
+  },
+  categoryButton: {
+    backgroundColor: "#4CAF50",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    marginBottom: 8,
+    shadowColor: "#000",
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    elevation: 3,
+    width: 200, 
+    alignItems: "center",
+  },
+  categoryButtonText: {
+    fontSize: 18,
+    color: "#fff",
+    fontWeight: "bold",
   },
   chipContainer: {
     flexDirection: "row",
     flexWrap: "wrap",
     justifyContent: "center",
-    gap: 8, // Keeps gaps between chips
-    paddingBottom: 16, // Optional padding for visual spacing at the bottom
+    gap: 8,
   },
   chip: {
     margin: 4,
