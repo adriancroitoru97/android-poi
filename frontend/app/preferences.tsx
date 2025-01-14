@@ -165,6 +165,8 @@ const styles = StyleSheet.create({
     padding: 16,
     alignItems: "center",
     backgroundColor: "#fff",
+    paddingTop: 64,
+    paddingBottom: 24,
   },
   title: {
     textAlign: "center",
@@ -206,7 +208,7 @@ const styles = StyleSheet.create({
   },
   saveButton: {
     marginTop: 16,
-    width: "50%",
+    width: "90%",
     alignSelf: "center",
     backgroundColor: "#298a47",
   },
